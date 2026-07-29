@@ -5,6 +5,7 @@ import Link from "next/link";
 import ProductTable from "@/components/admin/ProductTable";
 import { getProducts } from "@/services/admin/product.admin.service";
 import { Product } from "@/types/product";
+import Loading from "@/components/ui/Loading";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -25,7 +26,7 @@ export default function ProductsPage() {
   }, [load]);
 
   if (loading) {
-    return <p>Loading products...</p>;
+    return <Loading />
   }
 
   return (

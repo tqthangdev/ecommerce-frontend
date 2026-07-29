@@ -5,6 +5,7 @@ import Link from "next/link";
 import CategoryTable from "@/components/admin/CategoryTable";
 import { getCategories } from "@/services/admin/category.admin.service";
 import { Category } from "@/types/product";
+import Loading from "@/components/ui/Loading";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -25,7 +26,7 @@ export default function AdminCategoriesPage() {
   }, [load]);
 
   if (loading) {
-    return <p>Loading categories...</p>;
+    return <Loading />;
   }
 
   return (

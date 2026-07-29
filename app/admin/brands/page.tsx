@@ -5,6 +5,7 @@ import Link from "next/link";
 import BrandTable from "@/components/admin/BrandTable";
 import { getBrands } from "@/services/admin/brand.admin.service";
 import { Brand } from "@/types/product";
+import Loading from "@/components/ui/Loading";
 
 export default function AdminBrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -25,7 +26,7 @@ export default function AdminBrandsPage() {
   }, [load]);
 
   if (loading) {
-    return <p>Loading brands...</p>;
+    return <Loading />;
   }
 
   return (
