@@ -1,0 +1,83 @@
+"use client";
+
+import Image from "next/image";
+import { useCartStore } from "@/stores/cart.store";
+import { CartItem as CartItemType } from "@/types/cart";
+
+type Props = {
+  item: CartItemType;
+};
+
+function getThumbnail(item: CartItemType): string {
+  const product = item.product;
+  if (item.variant?.imageUrl) return item.variant.imageUrl;
+  const primary = product.images?.find((img) => img.primary);
+  if (primary?.imageUrl) return primary.imageUrl;
+  if (product.images?.[0]?.imageUrl) return product.images[0].imageUrl;
+  return "/images/placeholder.jpg";
+}
+
+export default function CartItem({ item }: Props) {
+  const increase = useCartStore((state) => state.increase);
+  const decrease = useCartStore((state) => state.decrease);
+  const removeItem = useCartStore((state) => state.removeItem);
+
+  const product = item.product;
+  const price = item.variant?.price ?? product.effectivePrice;
+  const thumbnail = getThumbnail(item);
+
+  return (
+    <div className="flex items-center gap-5 rounded-xl border p-5">
+      <Image
+        src={thumbnail}
+        alt={product.name}
+        width={100}
+        height={100}
+        className="rounded-lg object-cover"
+      />
+
+      <div className="flex-1">
+        <h3 className="font-semibold">{product.name}</h3>
+
+        {item.variant && (
+          <p className="mt-1 text-sm text-gray-500">
+            {item.variant.color}
+            {item.variant.size ? ` / ${item.variant.size}` : ""}
+          </p>
+        )}
+
+        <p className="mt-2 text-red-600">
+          {price.toLocaleString("vi-VN")} đ
+        </p>
+
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            onClick={() => decrease(product.id, item.variant?.id)}
+            className="h-8 w-8 rounded border"
+          >
+            -
+          </button>
+          <span>{item.quantity}</span>
+          <button
+            onClick={() => increase(product.id, item.variant?.id)}
+            className="h-8 w-8 rounded border"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-4 font-semibold">
+          {(price * item.quantity).toLocaleString("vi-VN")} đ
+        </p>
+        <button
+          onClick={() => removeItem(product.id, item.variant?.id)}
+          className="text-sm text-red-500 hover:text-red-700"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  );
+}
