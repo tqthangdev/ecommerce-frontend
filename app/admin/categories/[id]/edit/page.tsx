@@ -6,6 +6,7 @@ import {
   getCategoryById,
   updateCategory,
 } from "@/services/admin/category.admin.service";
+import Loading from "@/components/ui/Loading";
 
 export default function EditCategoryPage() {
   const { id } = useParams<{ id: string }>();
@@ -45,7 +46,7 @@ export default function EditCategoryPage() {
   }
 
   if (loading) {
-    return <p className="p-10">Loading category...</p>;
+    return <Loading />;
   }
 
   return (

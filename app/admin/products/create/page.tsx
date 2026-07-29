@@ -6,6 +6,7 @@ import { createProduct, uploadImage } from "@/services/admin/product.admin.servi
 import { getCategories } from "@/services/admin/category.admin.service";
 import { getBrands } from "@/services/admin/brand.admin.service";
 import { Category, Brand } from "@/types/product";
+import Loading from "@/components/ui/Loading";
 
 export default function CreateProductPage() {
   const router = useRouter();
@@ -75,7 +76,7 @@ export default function CreateProductPage() {
   }
 
   if (loadingOptions) {
-    return <p className="p-10 text-sm text-gray-500">Loading form...</p>;
+    return <Loading />;
   }
 
   return (

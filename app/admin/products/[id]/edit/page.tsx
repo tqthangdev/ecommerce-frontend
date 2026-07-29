@@ -16,6 +16,7 @@ import {
 import { getCategories } from "@/services/admin/category.admin.service";
 import { getBrands } from "@/services/admin/brand.admin.service";
 import { Product, ProductVariant, ProductImage, Category, Brand } from "@/types/product";
+import Loading from "@/components/ui/Loading";
 
 export default function EditProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -94,7 +95,7 @@ export default function EditProductPage() {
   }
 
   if (loading) {
-    return <p className="p-10">Loading product...</p>;
+    return <Loading />;
   }
 
   if (!product) {

@@ -6,6 +6,7 @@ import {
   getBrandById,
   updateBrand,
 } from "@/services/admin/brand.admin.service";
+import Loading from "@/components/ui/Loading";
 
 export default function EditBrandPage() {
   const { id } = useParams<{ id: string }>();
@@ -45,7 +46,7 @@ export default function EditBrandPage() {
   }
 
   if (loading) {
-    return <p className="p-10">Loading brand...</p>;
+    return <Loading />;
   }
 
   return (
