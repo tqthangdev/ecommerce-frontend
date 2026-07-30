@@ -41,6 +41,28 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 let isRefreshing = false;
 let pendingQueue: Array<(token: string | null) => void> = [];
 
+// Gọi khi app load để khôi phục AT từ RT cookie
+export async function restoreAccessToken(): Promise<boolean> {
+  const token = useAuthStore.getState().accessToken;
+  if (token) return true;
+
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  try {
+    const res = await axios.post<ApiResponse<{ accessToken: string }>>(
+      `${API_BASE_URL}/api/auth/refresh`,
+      {},
+      { withCredentials: true }
+    );
+    useAuthStore.getState().setAccessToken(res.data.data.accessToken);
+    return true;
+  } catch {
+    clearCookies();
+    return false;
+  }
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -100,13 +122,13 @@ api.interceptors.response.use(
 );
 
 export function getErrorMessage(err: unknown): string {
-  if (axios.isAxiosError(err)) {
-    if (!err.response) {
+  if (err && typeof err === "object" && "response" in err) {
+    const response = (err as { response?: { status?: number; data?: unknown } }).response;
+    if (!response) {
       return "Unable to connect to the server.";
     }
-    const data = err.response.data as ApiResponse<unknown> | undefined;
-
-    switch (err.response.status) {
+    const data = response.data as ApiResponse<unknown> | undefined;
+    switch (response.status) {
       case 401:
         return "Session expired.";
       case 403:
