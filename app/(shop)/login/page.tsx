@@ -8,7 +8,8 @@ import { getErrorMessage } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const login = useAuthStore((state) => state.login);
+  const setUser = useAuthStore((state) => state.setUser);
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,7 +25,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const data = await loginApi(email, password);
-      login(data.user, data.accessToken, data.refreshToken);
+      setUser(data.user);
+      setAccessToken(data.accessToken);
       if (data.user.roles.includes("ADMIN")) {
         router.push("/admin");
       } else {
