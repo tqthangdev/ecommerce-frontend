@@ -30,6 +30,10 @@ export function clearCookies() {
   document.cookie = "refresh_token=; path=/; max-age=0";
 }
 
+export function clearAuth() {
+  localStorage.removeItem("auth-storage");
+}
+
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = useAuthStore.getState().accessToken;
   if (token) {
@@ -73,8 +77,8 @@ api.interceptors.response.use(
     }
 
     if (originalRequest.url?.includes("/api/auth/refresh")) {
-      useAuthStore.getState().logout();
       clearCookies();
+      clearAuth();
       return Promise.reject(new Error("Session expired."));
     }
 
@@ -112,8 +116,11 @@ api.interceptors.response.use(
     } catch {
       pendingQueue.forEach((cb) => cb(null));
       pendingQueue = [];
-      useAuthStore.getState().logout();
       clearCookies();
+      clearAuth();
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
       return Promise.reject(new Error("Session expired."));
     } finally {
       isRefreshing = false;

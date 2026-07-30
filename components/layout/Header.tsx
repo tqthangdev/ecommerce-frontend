@@ -13,7 +13,7 @@ import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { logout as logoutApi } from "@/lib/auth.service";
-import { clearCookies } from "@/lib/api";
+import { clearCookies, clearAuth } from "@/lib/api";
 
 export default function Header() {
   const items = useCartStore((state) => state.items);
@@ -59,6 +59,7 @@ export default function Header() {
       // ignore
     }
     clearCookies();
+    clearAuth();
     logout();
     window.location.href = "/";
   }
