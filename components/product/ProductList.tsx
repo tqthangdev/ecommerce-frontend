@@ -5,6 +5,7 @@ import ProductGrid from "./ProductGrid";
 import ProductPagination from "./ProductPagination";
 import { Product } from "@/types/product";
 import { getProducts } from "@/services/product.service";
+import Loading from "@/components/ui/Loading";
 
 type Props = {
   keyword?: string;
@@ -53,9 +54,7 @@ export default function ProductList({
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <p>Loading products...</p>
-      </div>
+      <Loading />
     );
   }
 
@@ -69,9 +68,7 @@ export default function ProductList({
 
   if (products.length === 0) {
     return (
-      <div className="flex justify-center py-20">
-        <p>No products found.</p>
-      </div>
+      <Loading />
     );
   }
 

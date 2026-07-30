@@ -18,7 +18,7 @@ export default function ProductCard({ product }: Props) {
   const hasDiscount = product.discountPercent > 0;
 
   return (
-    <div className="group bg-white rounded-2xl border overflow-hidden hover:shadow-xl transition-all duration-300">
+    <div className="group bg-white rounded-lg border overflow-hidden hover:shadow-xl transition-all duration-300">
       <div className="h-64 bg-gray-100 flex items-center justify-center overflow-hidden relative">
         {hasDiscount && (
           <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
@@ -29,7 +29,7 @@ export default function ProductCard({ product }: Props) {
         <img
           src={thumbnail}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+          className="w-full h-full rounded-lg object-cover group-hover:scale-105 transition duration-300"
         />
       </div>
 

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import ProductDetail from "@/components/product/ProductDetail";
 import { getProductBySlug } from "@/services/product.service";
 import { Product } from "@/types/product";
+import Loading from "@/components/ui/Loading";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -24,7 +25,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-20 text-center">
-        <p>Loading...</p>
+        <Loading />
       </main>
     );
   }
