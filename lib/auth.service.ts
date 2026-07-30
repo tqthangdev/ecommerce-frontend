@@ -30,3 +30,7 @@ export async function register(name: string, email: string, password: string) {
   });
   return res.data.data;
 }
+
+export async function logout() {
+  await api.post("/api/auth/logout");
+}

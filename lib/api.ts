@@ -15,9 +15,21 @@ export interface ApiResponse<T> {
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
-// Gắn access token vào mọi request
+function getRefreshToken(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|;\s*)refresh_token=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+export function clearCookies() {
+  if (typeof document === "undefined") return;
+  document.cookie = "access_token=; path=/; max-age=0";
+  document.cookie = "refresh_token=; path=/; max-age=0";
+}
+
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = useAuthStore.getState().accessToken;
   if (token) {
@@ -26,7 +38,6 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-// Tự động refresh token khi bị 401, retry lại request cũ
 let isRefreshing = false;
 let pendingQueue: Array<(token: string | null) => void> = [];
 
@@ -36,12 +47,13 @@ api.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
+      return Promise.reject(new Error(getErrorMessage(error)));
     }
 
     if (originalRequest.url?.includes("/api/auth/refresh")) {
       useAuthStore.getState().logout();
-      return Promise.reject(error);
+      clearCookies();
+      return Promise.reject(new Error("Session expired."));
     }
 
     originalRequest._retry = true;
@@ -49,7 +61,7 @@ api.interceptors.response.use(
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         pendingQueue.push((token) => {
-          if (!token) return reject(error);
+          if (!token) return reject(new Error("Session expired."));
           originalRequest.headers.set("Authorization", `Bearer ${token}`);
           resolve(api(originalRequest));
         });
@@ -58,27 +70,29 @@ api.interceptors.response.use(
 
     isRefreshing = true;
     try {
-      const refreshToken = useAuthStore.getState().refreshToken;
+      const refreshToken = getRefreshToken();
       if (!refreshToken) throw new Error("No refresh token");
 
-      const res = await axios.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
+      const res = await axios.post<ApiResponse<{ accessToken: string }>>(
         `${API_BASE_URL}/api/auth/refresh`,
-        { refreshToken }
+        {},
+        { withCredentials: true }
       );
 
-      const { accessToken, refreshToken: newRefreshToken } = res.data.data;
-      useAuthStore.getState().setTokens(accessToken, newRefreshToken);
+      const { accessToken } = res.data.data;
+      useAuthStore.getState().setAccessToken(accessToken);
 
       pendingQueue.forEach((cb) => cb(accessToken));
       pendingQueue = [];
 
       originalRequest.headers.set("Authorization", `Bearer ${accessToken}`);
       return api(originalRequest);
-    } catch (refreshError) {
+    } catch {
       pendingQueue.forEach((cb) => cb(null));
       pendingQueue = [];
       useAuthStore.getState().logout();
-      return Promise.reject(refreshError);
+      clearCookies();
+      return Promise.reject(new Error("Session expired."));
     } finally {
       isRefreshing = false;
     }
@@ -87,11 +101,28 @@ api.interceptors.response.use(
 
 export function getErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
-    const data = err.response?.data as ApiResponse<unknown> | undefined;
-    if (err.response?.status === 429) {
-      return "Too many attempts. Please try again later.";
+    if (!err.response) {
+      return "Unable to connect to the server.";
     }
-    return data?.message || err.message || "Request failed";
+    const data = err.response.data as ApiResponse<unknown> | undefined;
+
+    switch (err.response.status) {
+      case 401:
+        return "Session expired.";
+      case 403:
+        return "You do not have permission.";
+      case 404:
+        return "Resource not found.";
+      case 429:
+        return "Too many attempts. Please try again later.";
+      case 500:
+        return "Internal server error.";
+      default:
+        return data?.message || "Request failed.";
+    }
   }
-  return "Something went wrong. Please try again.";
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return "Something went wrong.";
 }

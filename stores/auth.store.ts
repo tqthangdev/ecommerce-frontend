@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useCartStore } from "./cart.store";
 
 interface User {
   id: number;
@@ -11,9 +12,8 @@ interface User {
 interface AuthState {
   user: User | null;
   accessToken: string | null;
-  refreshToken: string | null;
-  login: (user: User, accessToken: string, refreshToken: string) => void;
-  setTokens: (accessToken: string, refreshToken: string) => void;
+  setUser: (user: User) => void;
+  setAccessToken: (token: string | null) => void;
   logout: () => void;
 }
 
@@ -22,16 +22,19 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       accessToken: null,
-      refreshToken: null,
-      login: (user, accessToken, refreshToken) =>
-        set({ user, accessToken, refreshToken }),
-      setTokens: (accessToken, refreshToken) =>
-        set({ accessToken, refreshToken }),
-      logout: () =>
-        set({ user: null, accessToken: null, refreshToken: null }),
+
+      setUser: (user) => set({ user }),
+
+      setAccessToken: (token) => set({ accessToken: token }),
+
+      logout: () => {
+        set({ user: null, accessToken: null });
+        useCartStore.getState().clear();
+      },
     }),
     {
       name: "auth-storage",
+      partialize: (state) => ({ user: state.user }),
     },
   ),
 );
