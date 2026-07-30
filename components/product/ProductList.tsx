@@ -46,8 +46,10 @@ export default function ProductList({
         setProducts(data.content);
         setTotalPages(data.totalPages);
       })
-      .catch(() => {
-        setError("Failed to load products. Please try again.");
+      .catch((err) => {
+        debugger
+        let messeage = err?.message ?? "Failed to load products. Please try again."
+        setError(messeage);
       })
       .finally(() => setLoading(false));
   }, [keyword, categoryId, minPrice, maxPrice, sort, page]);

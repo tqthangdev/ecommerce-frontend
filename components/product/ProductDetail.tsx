@@ -17,36 +17,74 @@ function getMainImage(product: Product, selectedVariant?: ProductVariant): strin
   return "/images/placeholder.jpg";
 }
 
-function groupBy(items: ProductVariant[], key: keyof ProductVariant): ProductVariant[] {
-  const seen = new Set();
-  return items.filter((v) => {
-    const val = v[key];
-    if (val === null || val === undefined) return false;
-    if (seen.has(String(val))) return false;
-    seen.add(String(val));
-    return true;
-  });
+function uniqueValues(items: ProductVariant[], key: keyof ProductVariant): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const v of items) {
+    const val = String(v[key]);
+    if (val && val !== "null" && val !== "undefined" && !seen.has(val)) {
+      seen.add(val);
+      result.push(val);
+    }
+  }
+  return result;
+}
+
+function firstAvailableSize(variants: ProductVariant[], color: string): string | null {
+  const sizesForColor = variants
+    .filter((v) => String(v.color) === color && v.stockQuantity > 0)
+    .map((v) => String(v.size))
+    .filter((s) => s && s !== "null" && s !== "undefined");
+  const seen = new Set<string>();
+  return sizesForColor.find((s) => !seen.has(s) && seen.add(s)) ?? null;
 }
 
 export default function ProductDetail({ product }: Props) {
   const hasVariants = product.variants && product.variants.length > 0;
-  const colors = hasVariants ? groupBy(product.variants, "color") : [];
-  const sizes = hasVariants ? groupBy(product.variants, "size") : [];
+  const allColors = hasVariants ? uniqueValues(product.variants, "color") : [];
 
   const [selectedColor, setSelectedColor] = useState(
-    colors.length > 0 ? String(colors[0].color) : ""
+    allColors.length > 0 ? allColors[0] : ""
   );
-  const [selectedSize, setSelectedSize] = useState(
-    sizes.length > 0 ? String(sizes[0].size) : ""
+
+  const sizesForColor = hasVariants
+    ? uniqueValues(
+        product.variants.filter((v) => String(v.color) === selectedColor),
+        "size"
+      ).sort((a, b) => {
+        const na = Number(a);
+        const nb = Number(b);
+        return isNaN(na) || isNaN(nb) ? a.localeCompare(b) : na - nb;
+      })
+    : [];
+
+  const [selectedSize, setSelectedSize] = useState<string>(
+    sizesForColor.length > 0 ? sizesForColor[0] : ""
   );
 
   const selectedVariant = hasVariants
     ? product.variants.find(
-        (v) =>
-          String(v.color) === selectedColor &&
-          String(v.size) === selectedSize
+        (v) => String(v.color) === selectedColor && String(v.size) === selectedSize
       )
     : undefined;
+
+  function handleColorChange(color: string) {
+    setSelectedColor(color);
+    const firstSize = firstAvailableSize(product.variants, color);
+    if (firstSize) {
+      setSelectedSize(firstSize);
+    } else {
+      const newSizes = uniqueValues(
+        product.variants.filter((v) => String(v.color) === color),
+        "size"
+      ).sort((a, b) => {
+        const na = Number(a);
+        const nb = Number(b);
+        return isNaN(na) || isNaN(nb) ? a.localeCompare(b) : na - nb;
+      });
+      setSelectedSize(newSizes[0] ?? "");
+    }
+  }
 
   const mainImage = getMainImage(product, selectedVariant);
   const hasDiscount = product.discountPercent > 0;
@@ -91,9 +129,14 @@ export default function ProductDetail({ product }: Props) {
             {price.toLocaleString("vi-VN")} đ
           </span>
           {hasDiscount && (
-            <span className="text-lg text-gray-400 line-through">
-              {product.basePrice.toLocaleString("vi-VN")} đ
-            </span>
+            <>
+              <span className="text-lg text-gray-400 line-through">
+                {product.basePrice.toLocaleString("vi-VN")} đ
+              </span>
+              <span className="rounded bg-red-500 px-2 py-1 text-sm font-bold text-white">
+                -{product.discountPercent}%
+              </span>
+            </>
           )}
         </div>
 
@@ -101,59 +144,59 @@ export default function ProductDetail({ product }: Props) {
 
         {hasVariants && (
           <div className="space-y-4 border-t pt-4">
-            {colors.length > 0 && (
+            {allColors.length > 0 && (
               <div>
                 <h3 className="mb-2 font-semibold">
                   Color:{" "}
                   <span className="font-normal">{selectedColor}</span>
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {colors.map((v) => (
+                  {allColors.map((color) => (
                     <button
-                      key={String(v.color)}
-                      onClick={() => setSelectedColor(String(v.color))}
+                      key={color}
+                      onClick={() => handleColorChange(color)}
                       className={`rounded border px-4 py-2 text-sm transition ${
-                        selectedColor === String(v.color)
+                        selectedColor === color
                           ? "border-black bg-black text-white"
                           : "border-gray-300 hover:border-black"
                       }`}
                     >
-                      {v.color}
+                      {color}
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {sizes.length > 0 && (
+            {sizesForColor.length > 0 && (
               <div>
                 <h3 className="mb-2 font-semibold">
                   Size:{" "}
-                  <span className="font-normal">{selectedSize || "Select"}</span>
+                  <span className="font-normal">{selectedSize}</span>
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {sizes.map((v) => {
+                  {sizesForColor.map((size) => {
                     const isAvailable =
-                      product.variants?.some(
+                      product.variants.some(
                         (pv) =>
                           String(pv.color) === selectedColor &&
-                          String(pv.size) === String(v.size) &&
+                          String(pv.size) === size &&
                           pv.stockQuantity > 0
-                      ) ?? false;
+                      );
                     return (
                       <button
-                        key={String(v.size)}
-                        onClick={() => setSelectedSize(String(v.size))}
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
                         disabled={!isAvailable}
                         className={`rounded border px-4 py-2 text-sm transition ${
-                          selectedSize === String(v.size)
+                          selectedSize === size
                             ? "border-black bg-black text-white"
                             : isAvailable
                             ? "border-gray-300 hover:border-black"
                             : "border-gray-200 text-gray-300 line-through cursor-not-allowed"
                         }`}
                       >
-                        {v.size}
+                        {size}
                       </button>
                     );
                   })}
