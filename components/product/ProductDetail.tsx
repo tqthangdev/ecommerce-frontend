@@ -96,12 +96,12 @@ export default function ProductDetail({ product }: Props) {
   return (
     <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
       <div className="flex items-center justify-center rounded-xl bg-gray-100 p-8">
-        <Image
+        <img
           src={mainImage}
           alt={product.name}
           width={500}
           height={500}
-          className="rounded-lg object-cover"
+          className="qthang rounded-lg object-cover"
         />
       </div>
 

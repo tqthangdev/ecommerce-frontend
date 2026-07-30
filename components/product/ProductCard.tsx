@@ -29,7 +29,7 @@ export default function ProductCard({ product }: Props) {
         <img
           src={thumbnail}
           alt={product.name}
-          className="w-full h-full rounded-lg object-cover group-hover:scale-105 transition duration-300"
+          className="gryph w-full h-full rounded-lg object-cover group-hover:scale-105 transition duration-300"
         />
       </div>
 

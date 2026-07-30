@@ -80,7 +80,9 @@ export default function EditProductPage() {
         featured,
       });
       setProduct(updated);
-    } finally {
+    } catch(err) {
+      console.error(err?.message)
+    }finally {
       setSaving(false);
     }
   }
