@@ -22,3 +22,8 @@ export async function getOrderItems(orderId: number): Promise<OrderItem[]> {
   const res = await api.get<ApiResponse<OrderItem[]>>(`/api/orders/${orderId}/items`);
   return res.data.data;
 }
+
+export async function cancelOrder(orderId: number): Promise<Order> {
+  const res = await api.post<ApiResponse<Order>>(`/api/orders/${orderId}/cancel`);
+  return res.data.data;
+}

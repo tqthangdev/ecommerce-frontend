@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getOrderById } from "@/services/order.service";
+import { getOrderById, cancelOrder as cancelOrderApi } from "@/services/order.service";
+import { getErrorMessage } from "@/lib/api";
 import { Order } from "@/types/order";
 import Loading from "@/components/ui/Loading";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -36,10 +38,13 @@ function formatDate(dateStr: string) {
 
 export default function OrderDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = Number(params.id);
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -50,8 +55,22 @@ export default function OrderDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  async function handleCancel() {
+    setCancelling(true);
+    setError("");
+    try {
+      const updated = await cancelOrderApi(id);
+      setOrder(updated);
+      setShowCancelDialog(false);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setCancelling(false);
+    }
+  }
+
   if (loading) return <Loading />;
-  if (error || !order) return <div className="py-20 text-center text-red-500">{error || "Order not found."}</div>;
+  if (error && !order) return <div className="py-20 text-center text-red-500">{error}</div>;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 space-y-6">
@@ -62,18 +81,30 @@ export default function OrderDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Order #{order.orderNumber}</h1>
-          <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
+          <h1 className="text-2xl font-bold">Order #{order?.orderNumber}</h1>
+          <p className="text-sm text-gray-500">{order && formatDate(order.createdAt)}</p>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className={`text-sm px-3 py-1 rounded-full font-medium ${STATUS_COLORS[order.status]}`}>
-            {order.status}
-          </span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${PAYMENT_STATUS_COLORS[order.paymentStatus]}`}>
-            Payment: {order.paymentStatus}
-          </span>
+        <div className="flex items-center gap-3">
+          {order?.cancellable && (
+            <button
+              onClick={() => setShowCancelDialog(true)}
+              className="rounded border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+            >
+              Cancel Order
+            </button>
+          )}
+          <div className="flex flex-col items-end gap-1">
+            <span className={`text-sm px-3 py-1 rounded-full font-medium ${order ? STATUS_COLORS[order.status] : ""}`}>
+              {order?.status}
+            </span>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${order ? PAYMENT_STATUS_COLORS[order.paymentStatus] : ""}`}>
+              Payment: {order?.paymentStatus}
+            </span>
+          </div>
         </div>
       </div>
+
+      {error && <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded p-3">{error}</p>}
 
       {/* Items */}
       <div className="rounded-xl border p-6 space-y-4">
@@ -146,6 +177,17 @@ export default function OrderDetailPage() {
           <p className="text-sm text-gray-600">{order.notes}</p>
         </div>
       )}
+
+      <ConfirmDialog
+        open={showCancelDialog}
+        title="Cancel Order"
+        description={`Are you sure you want to cancel order #${order.orderNumber}? This action cannot be undone.`}
+        confirmText="Yes"
+        cancelText="No"
+        loading={cancelling}
+        onConfirm={handleCancel}
+        onCancel={() => setShowCancelDialog(false)}
+      />
     </div>
   );
 }
