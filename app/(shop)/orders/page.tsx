@@ -6,6 +6,7 @@ import { getOrders } from "@/services/order.service";
 import { Order } from "@/types/order";
 import { PageResponse } from "@/types/api";
 import Loading from "@/components/ui/Loading";
+import EmptyOrder from "@/components/order/EmptyOrder";
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -41,14 +42,9 @@ export default function OrdersPage() {
 
   if (loading) return <Loading />;
 
-  if (!data || data.empty) {
+  if (!data || data.empty || (data?.content ?? []).length == 0) {
     return (
-      <div className="py-20 text-center">
-        <p className="text-gray-500">You have no orders yet.</p>
-        <Link href="/products" className="mt-4 inline-block text-blue-600 hover:underline">
-          Start shopping
-        </Link>
-      </div>
+      <EmptyOrder />
     );
   }
   return (
