@@ -5,7 +5,7 @@ interface Props {
   product: Product;
 }
 
-function getThumbnail(product: Product): string {
+export function getThumbnail(product: Product): string {
   const primary = product.images?.find((img) => img.primary);
   if (primary?.imageUrl) return primary.imageUrl;
   if (product.images?.[0]?.imageUrl) return product.images[0].imageUrl;

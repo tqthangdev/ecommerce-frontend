@@ -24,11 +24,9 @@ export default function AddToCartButton({ product, selectedVariant }: Props) {
     setQuantity((prev) => Math.min(stock, prev + 1));
   }
 
-  function handleAddCart() {
+  async function handleAddCart() {
     if (outOfStock) return;
-    for (let i = 0; i < quantity; i++) {
-      addItem({ product, variant: selectedVariant, quantity: 1 });
-    }
+    await addItem({ product, variant: selectedVariant, quantity });
   }
 
   if (outOfStock) {

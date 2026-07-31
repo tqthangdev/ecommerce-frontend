@@ -28,7 +28,7 @@ export default function CartItem({ item }: Props) {
 
   return (
     <div className="flex items-center gap-5 rounded-xl border p-5">
-      <Image
+      <img
         src={thumbnail}
         alt={product.name}
         width={100}

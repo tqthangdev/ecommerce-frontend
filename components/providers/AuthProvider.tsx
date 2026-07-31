@@ -1,21 +1,22 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { restoreAccessToken } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth.store";
+import { useCartStore } from "@/stores/cart.store";
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((state) => state.user);
+  const syncCart = useCartStore((state) => state.syncFromServer);
   const initialized = useRef(false);
 
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
 
-    restoreAccessToken().then((ok) => {
-      if (!ok && typeof window !== "undefined") {
-        // RT không hợp lệ → đã redirect bởi api.ts interceptor
-      }
-    });
-  }, []);
+    if (user) {
+      syncCart();
+    }
+  }, [user]);
 
   return <>{children}</>;
 }

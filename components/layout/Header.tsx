@@ -8,6 +8,7 @@ import {
   User,
   LayoutDashboard,
   LogOut,
+  ShoppingBag,
 } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
@@ -130,6 +131,14 @@ export default function Header() {
                           Admin Dashboard
                         </Link>
                       )}
+                      <Link
+                        href="/orders"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50"
+                      >
+                        <ShoppingBag size={16} />
+                        My Orders
+                      </Link>
                       <button
                         onClick={handleLogout}
                         className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50"

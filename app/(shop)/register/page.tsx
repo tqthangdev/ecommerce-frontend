@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth.store";
+import { useCartStore } from "@/stores/cart.store";
 import { register as registerApi } from "@/lib/auth.service";
 import { getErrorMessage } from "@/lib/api";
 
@@ -9,6 +10,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const syncCart = useCartStore((state) => state.syncFromServer);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +33,7 @@ export default function RegisterPage() {
       const data = await registerApi(name, email, password);
       setUser(data.user);
       setAccessToken(data.accessToken);
+      await syncCart();
       router.push("/");
     } catch (err) {
       setError(getErrorMessage(err));

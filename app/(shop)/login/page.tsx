@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/stores/auth.store";
+import { useCartStore } from "@/stores/cart.store";
 import { login as loginApi } from "@/lib/auth.service";
 import { getErrorMessage } from "@/lib/api";
 
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const syncCart = useCartStore((state) => state.syncFromServer);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,6 +29,7 @@ export default function LoginPage() {
       const data = await loginApi(email, password);
       setUser(data.user);
       setAccessToken(data.accessToken);
+      await syncCart();
       if (data.user.roles.includes("ADMIN")) {
         router.push("/admin");
       } else {
