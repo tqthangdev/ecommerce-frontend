@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getAdminOrders, updateOrderStatus } from "@/services/admin/order.admin.service";
 import { Order } from "@/types/order";
 import { PageResponse } from "@/types/api";
@@ -36,16 +36,34 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const abortRef = useRef<AbortController>();
+
+  // Debounce keyword search + skip if < 2 chars
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedKeyword(keyword.length >= 2 ? keyword : "");
+      setPage(0);
+    }, 500);
+    return () => clearTimeout(debounceRef.current);
+  }, [keyword]);
 
   useEffect(() => {
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
     setLoading(true);
-    getAdminOrders(page, 10, statusFilter || undefined, keyword || undefined)
+    getAdminOrders(page, 10, statusFilter || undefined, debouncedKeyword || undefined, abortRef.current?.signal)
       .then(setData)
-      .catch((err) => setError(getErrorMessage(err)))
+      .catch((err) => {
+        if (err.name !== "CanceledError") setError(getErrorMessage(err));
+      })
       .finally(() => setLoading(false));
-  }, [page, statusFilter, keyword]);
+    return () => abortRef.current?.abort();
+  }, [page, statusFilter, debouncedKeyword]);
 
   async function handleStatusChange(orderId: number, newStatus: string) {
     setUpdatingId(orderId);

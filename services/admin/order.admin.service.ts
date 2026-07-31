@@ -6,10 +6,12 @@ export async function getAdminOrders(
   page = 0,
   size = 10,
   status?: string,
-  keyword?: string
+  keyword?: string,
+  signal?: AbortSignal
 ): Promise<PageResponse<Order>> {
   const res = await api.get<ApiResponse<PageResponse<Order>>>("/api/admin/orders", {
     params: { page, size, status, keyword },
+    signal,
   });
   return res.data.data;
 }
