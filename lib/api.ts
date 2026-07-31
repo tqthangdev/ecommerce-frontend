@@ -21,6 +21,18 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+// Endpoints where a 401 response is an expected direct answer to the
+// request itself (wrong password, account locked, invalid/expired reset
+// token, etc.) — NOT a sign that the access token needs refreshing.
+// These must never trigger the silent-refresh flow below.
+const AUTH_ENDPOINTS_EXCLUDED_FROM_REFRESH = [
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/refresh",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
+];
+
 function getRefreshToken(): string | null {
   if (typeof document === "undefined") return null;
 
@@ -104,23 +116,17 @@ api.interceptors.response.use(
         _retry?: boolean;
       };
 
+    const isExcludedFromRefresh = AUTH_ENDPOINTS_EXCLUDED_FROM_REFRESH.some(
+      (path) => originalRequest.url?.includes(path)
+    );
+
     if (
       error.response?.status !== 401 ||
-      originalRequest._retry
+      originalRequest._retry ||
+      isExcludedFromRefresh
     ) {
       return Promise.reject(
         new Error(getErrorMessage(error))
-      );
-    }
-
-    if (
-      originalRequest.url?.includes("/api/auth/refresh")
-    ) {
-      clearCookies();
-      clearAuth();
-
-      return Promise.reject(
-        new Error("Session expired.")
       );
     }
 
@@ -218,16 +224,20 @@ export function getErrorMessage(err: unknown): string {
 
     switch (err.response.status) {
       case 401:
-        return "Session expired.";
+        // Prefer the backend's specific message (wrong password, account
+        // locked + countdown, etc.) and only fall back to the generic
+        // message when the backend didn't send one (e.g. a genuinely
+        // expired session with no body).
+        return data?.message || "Session expired.";
 
       case 403:
-        return "You do not have permission.";
+        return data?.message || "You do not have permission.";
 
       case 404:
-        return "Resource not found.";
+        return data?.message || "Resource not found.";
 
       case 429:
-        return "Too many attempts. Please try again later.";
+        return data?.message || "Too many attempts. Please try again later.";
 
       case 500:
         return "Internal server error.";
