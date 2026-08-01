@@ -3,7 +3,6 @@ import { api, ApiResponse } from "@/lib/api";
 
 export interface LoginResponse {
   accessToken: string;
-  refreshToken: string;
   tokenType: string;
   expiresIn: number;
   user: {

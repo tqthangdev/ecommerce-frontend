@@ -3,11 +3,10 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const refreshToken = request.cookies.get("refresh_token")?.value;
 
-  // Bảo vệ /admin
   if (pathname.startsWith("/admin")) {
-    const token = request.cookies.get("access_token")?.value;
-    if (!token) {
+    if (!refreshToken) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("from", pathname);
       return NextResponse.redirect(loginUrl);
@@ -15,10 +14,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Đã login thì không vào /login
   if (pathname === "/login" || pathname === "/register") {
-    const token = request.cookies.get("access_token")?.value;
-    if (token) {
+    if (refreshToken) {
       const from = request.nextUrl.searchParams.get("from");
       return NextResponse.redirect(new URL(from || "/", request.url));
     }

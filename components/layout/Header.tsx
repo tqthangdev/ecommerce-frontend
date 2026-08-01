@@ -14,7 +14,7 @@ import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { logout as logoutApi } from "@/lib/auth.service";
-import { clearCookies, clearAuth } from "@/lib/api";
+import { clearAuth } from "@/lib/api";
 
 export default function Header() {
   const items = useCartStore((state) => state.items);
@@ -59,7 +59,6 @@ export default function Header() {
     } catch {
       // ignore
     }
-    clearCookies();
     clearAuth();
     logout();
     window.location.href = "/";
@@ -79,13 +78,13 @@ export default function Header() {
           </Link>
 
           {/* Search */}
-          <div className="hidden w-[420px] items-center gap-3 rounded-full bg-gray-100 px-5 py-3 md:flex">
+          {/* <div className="hidden w-[420px] items-center gap-3 rounded-full bg-gray-100 px-5 py-3 md:flex">
             <Search size={20} className="text-gray-500" />
             <input
               placeholder="Search products..."
               className="w-full bg-transparent outline-none"
             />
-          </div>
+          </div> */}
 
           {/* Menu */}
           <nav className="flex items-center gap-6">
