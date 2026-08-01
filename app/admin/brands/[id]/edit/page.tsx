@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  getBrandById,
-  updateBrand,
-} from "@/services/admin/brand.admin.service";
+import { getBrandById, updateBrand } from "@/services/admin/brand.admin.service";
 import Loading from "@/components/ui/Loading";
 
 export default function EditBrandPage() {
@@ -90,11 +87,7 @@ export default function EditBrandPage() {
         </div>
 
         <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={active}
-            onChange={(e) => setActive(e.target.checked)}
-          />
+          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
           Active
         </label>
 
@@ -106,10 +99,7 @@ export default function EditBrandPage() {
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>
-          <button
-            onClick={() => router.push("/admin/brands")}
-            className="rounded-lg border p-3"
-          >
+          <button onClick={() => router.push("/admin/brands")} className="rounded-lg border p-3">
             Cancel
           </button>
         </div>

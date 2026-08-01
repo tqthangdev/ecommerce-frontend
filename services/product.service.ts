@@ -11,9 +11,7 @@ export type ProductQuery = {
   sort?: string;
 };
 
-export async function getProducts(
-  params?: ProductQuery,
-): Promise<{
+export async function getProducts(params?: ProductQuery): Promise<{
   content: Product[];
   page: number;
   size: number;

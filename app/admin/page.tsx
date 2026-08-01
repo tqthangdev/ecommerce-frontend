@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import DashboardCard from "@/components/admin/DashboardCard";
-import { getDashboardStats, getRecentOrders, RecentOrder } from "@/services/admin/dashboard.service";
+import {
+  getDashboardStats,
+  getRecentOrders,
+  RecentOrder,
+} from "@/services/admin/dashboard.service";
 import Loading from "@/components/ui/Loading";
 import Link from "next/link";
 
@@ -56,12 +60,14 @@ export default function AdminDashboard() {
         <DashboardCard title="Users" value={stats?.totalUsers?.toString() ?? "—"} />
         <DashboardCard
           title="Revenue"
-          value={stats?.totalRevenue ? `${Number(stats.totalRevenue).toLocaleString("vi-VN")} ₫` : "—"}
+          value={
+            stats?.totalRevenue ? `${Number(stats.totalRevenue).toLocaleString("vi-VN")} ₫` : "—"
+          }
         />
       </div>
 
       <section className="mt-10 rounded-xl border bg-white p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold">Recent Orders</h2>
           <Link href="/admin/orders" className="text-sm text-blue-600 hover:underline">
             View all →
@@ -74,10 +80,10 @@ export default function AdminDashboard() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-gray-500">
-                <th className="pb-3 pr-4">Order #</th>
-                <th className="pb-3 pr-4">Date</th>
-                <th className="pb-3 pr-4">Total</th>
-                <th className="pb-3 pr-4">Payment</th>
+                <th className="pr-4 pb-3">Order #</th>
+                <th className="pr-4 pb-3">Date</th>
+                <th className="pr-4 pb-3">Total</th>
+                <th className="pr-4 pb-3">Payment</th>
                 <th className="pb-3">Status</th>
               </tr>
             </thead>
@@ -91,12 +97,18 @@ export default function AdminDashboard() {
                   </td>
                   <td className="py-3 pr-4 text-xs">
                     <div>{order.paymentMethod}</div>
-                    <div className={order.paymentStatus === "PAID" ? "text-green-600" : "text-yellow-600"}>
+                    <div
+                      className={
+                        order.paymentStatus === "PAID" ? "text-green-600" : "text-yellow-600"
+                      }
+                    >
                       {order.paymentStatus}
                     </div>
                   </td>
                   <td className="py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[order.status]}`}>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_COLORS[order.status]}`}
+                    >
                       {order.status}
                     </span>
                   </td>

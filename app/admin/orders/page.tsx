@@ -8,7 +8,15 @@ import { getErrorMessage } from "@/lib/api";
 import Loading from "@/components/ui/Loading";
 import Link from "next/link";
 
-const ALL_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED", "REFUNDED"];
+const ALL_STATUSES = [
+  "PENDING",
+  "CONFIRMED",
+  "PROCESSING",
+  "SHIPPING",
+  "DELIVERED",
+  "CANCELLED",
+  "REFUNDED",
+];
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -56,7 +64,13 @@ export default function AdminOrdersPage() {
     abortRef.current?.abort();
     abortRef.current = new AbortController();
     setLoading(true);
-    getAdminOrders(page, 10, statusFilter || undefined, debouncedKeyword || undefined, abortRef.current?.signal)
+    getAdminOrders(
+      page,
+      10,
+      statusFilter || undefined,
+      debouncedKeyword || undefined,
+      abortRef.current?.signal
+    )
       .then(setData)
       .catch((err) => {
         if (err.name !== "CanceledError") setError(getErrorMessage(err));
@@ -81,27 +95,35 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6 p-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Orders</h1>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-3 items-center">
+      <div className="flex items-center gap-3">
         <input
           placeholder="Search order number..."
           value={keyword}
-          onChange={(e) => { setKeyword(e.target.value); setPage(0); }}
-          className="rounded border px-3 py-2 w-64"
+          onChange={(e) => {
+            setKeyword(e.target.value);
+            setPage(0);
+          }}
+          className="w-64 rounded border px-3 py-2"
         />
         <select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(0);
+          }}
           className="rounded border px-3 py-2"
         >
           <option value="">All statuses</option>
           {ALL_STATUSES.map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>
+              {s}
+            </option>
           ))}
         </select>
         {error && <p className="text-sm text-red-500">{error}</p>}
@@ -110,18 +132,18 @@ export default function AdminOrdersPage() {
       {loading ? (
         <Loading />
       ) : !data || data.empty ? (
-        <p className="text-gray-500 py-10 text-center">No orders found.</p>
+        <p className="py-10 text-center text-gray-500">No orders found.</p>
       ) : (
         <>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b font-medium text-left text-gray-500">
-                <th className="pb-3 pr-4">Order #</th>
-                <th className="pb-3 pr-4">Customer</th>
-                <th className="pb-3 pr-4">Date</th>
-                <th className="pb-3 pr-4">Total</th>
-                <th className="pb-3 pr-4">Payment</th>
-                <th className="pb-3 pr-4">Status</th>
+              <tr className="border-b text-left font-medium text-gray-500">
+                <th className="pr-4 pb-3">Order #</th>
+                <th className="pr-4 pb-3">Customer</th>
+                <th className="pr-4 pb-3">Date</th>
+                <th className="pr-4 pb-3">Total</th>
+                <th className="pr-4 pb-3">Payment</th>
+                <th className="pr-4 pb-3">Status</th>
                 <th className="pb-3">Actions</th>
               </tr>
             </thead>
@@ -129,7 +151,10 @@ export default function AdminOrdersPage() {
               {(data?.content ?? []).map((order) => (
                 <tr key={order.id} className="border-b hover:bg-gray-50">
                   <td className="py-3 pr-4">
-                    <Link href={`/admin/orders/${order.id}`} className="font-mono font-semibold hover:underline">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="font-mono font-semibold hover:underline"
+                    >
                       {order.orderNumber}
                     </Link>
                   </td>
@@ -138,10 +163,14 @@ export default function AdminOrdersPage() {
                     <div className="text-xs text-gray-500">{order.shippingAddress.phone}</div>
                   </td>
                   <td className="py-3 pr-4 text-gray-500">{formatDate(order.createdAt)}</td>
-                  <td className="py-3 pr-4 font-semibold">{order.totalAmount.toLocaleString("vi-VN")} đ</td>
+                  <td className="py-3 pr-4 font-semibold">
+                    {order.totalAmount.toLocaleString("vi-VN")} đ
+                  </td>
                   <td className="py-3 pr-4 text-xs">
                     <div>{order.paymentMethod}</div>
-                    <div className={`font-medium ${order.paymentStatus === "PAID" ? "text-green-600" : "text-yellow-600"}`}>
+                    <div
+                      className={`font-medium ${order.paymentStatus === "PAID" ? "text-green-600" : "text-yellow-600"}`}
+                    >
                       {order.paymentStatus}
                     </div>
                   </td>
@@ -153,12 +182,17 @@ export default function AdminOrdersPage() {
                       className={`rounded border px-2 py-1 text-xs font-medium ${STATUS_COLORS[order.status]}`}
                     >
                       {ALL_STATUSES.map((s) => (
-                        <option key={s} value={s}>{s}</option>
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
                       ))}
                     </select>
                   </td>
                   <td className="py-3">
-                    <Link href={`/admin/orders/${order.id}`} className="text-sm text-blue-600 hover:underline">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="text-sm text-blue-600 hover:underline"
+                    >
                       View
                     </Link>
                   </td>
@@ -170,15 +204,21 @@ export default function AdminOrdersPage() {
           {/* Pagination */}
           {data.totalPages > 1 && (
             <div className="flex justify-center gap-2 pt-4">
-              <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={data.first}
-                className="px-4 py-2 rounded border disabled:opacity-40">
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={data.first}
+                className="rounded border px-4 py-2 disabled:opacity-40"
+              >
                 Previous
               </button>
               <span className="px-4 py-2 text-sm text-gray-500">
                 Page {data.page + 1} of {data.totalPages}
               </span>
-              <button onClick={() => setPage((p) => p + 1)} disabled={data.last}
-                className="px-4 py-2 rounded border disabled:opacity-40">
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={data.last}
+                className="rounded border px-4 py-2 disabled:opacity-40"
+              >
                 Next
               </button>
             </div>

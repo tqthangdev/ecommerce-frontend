@@ -11,10 +11,7 @@ type Props = {
   onDeleted?: () => void;
 };
 
-export default function ProductTable({
-  products,
-  onDeleted,
-}: Props) {
+export default function ProductTable({ products, onDeleted }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<{
@@ -68,24 +65,16 @@ export default function ProductTable({
           <tbody>
             {products.map((product) => (
               <tr key={product.id} className="border-t">
-                <td className="p-4">
-                  {product.name}
-                </td>
+                <td className="p-4">{product.name}</td>
 
-                <td className="p-4">
-                  {product.basePrice.toLocaleString("vi-VN")} ₫
-                </td>
+                <td className="p-4">{product.basePrice.toLocaleString("vi-VN")} ₫</td>
 
-                <td className="p-4">
-                  {product.stockQuantity}
-                </td>
+                <td className="p-4">{product.stockQuantity}</td>
 
                 <td className="p-4">
                   <span
                     className={`rounded-full px-2 py-1 text-xs ${
-                      product.active
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-500"
+                      product.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
                     }`}
                   >
                     {product.active ? "Active" : "Inactive"}
@@ -101,9 +90,7 @@ export default function ProductTable({
                   </Link>
 
                   <button
-                    onClick={() =>
-                      handleDelete(product.id, product.name)
-                    }
+                    onClick={() => handleDelete(product.id, product.name)}
                     className="text-red-600 hover:underline"
                   >
                     Delete

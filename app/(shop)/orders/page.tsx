@@ -43,12 +43,10 @@ export default function OrdersPage() {
   if (loading) return <Loading />;
 
   if (!data || data.empty || (data?.content ?? []).length == 0) {
-    return (
-      <EmptyOrder />
-    );
+    return <EmptyOrder />;
   }
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
       <h1 className="text-3xl font-bold">My Orders</h1>
 
       <div className="space-y-4">
@@ -56,11 +54,13 @@ export default function OrdersPage() {
           <Link
             key={order.id}
             href={`/orders/${order.id}`}
-            className="block rounded-xl border p-5 hover:shadow-md transition"
+            className="block rounded-xl border p-5 transition hover:shadow-md"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-mono font-semibold text-sm">{order.orderNumber}</span>
-              <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[order.status]}`}>
+            <div className="mb-3 flex items-center justify-between">
+              <span className="font-mono text-sm font-semibold">{order.orderNumber}</span>
+              <span
+                className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_COLORS[order.status]}`}
+              >
                 {order.status}
               </span>
             </div>
@@ -73,18 +73,21 @@ export default function OrdersPage() {
             </div>
 
             <div className="mt-3 flex gap-2 overflow-x-auto">
-              {order.items.slice(0, 4).map((item, idx) => (
-                item.productImageUrl && (
-                  <img
-                    key={idx}
-                    src={item.productImageUrl}
-                    alt={item.productName}
-                    className="w-12 h-12 rounded object-cover flex-shrink-0"
-                  />
-                )
-              ))}
+              {order.items
+                .slice(0, 4)
+                .map(
+                  (item, idx) =>
+                    item.productImageUrl && (
+                      <img
+                        key={idx}
+                        src={item.productImageUrl}
+                        alt={item.productName}
+                        className="h-12 w-12 flex-shrink-0 rounded object-cover"
+                      />
+                    )
+                )}
               {order.items.length > 4 && (
-                <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-xs text-gray-400 flex-shrink-0">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
                   +{order.items.length - 4}
                 </div>
               )}
@@ -99,7 +102,7 @@ export default function OrdersPage() {
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={data.first}
-            className="px-4 py-2 rounded border disabled:opacity-40"
+            className="rounded border px-4 py-2 disabled:opacity-40"
           >
             Previous
           </button>
@@ -109,7 +112,7 @@ export default function OrdersPage() {
           <button
             onClick={() => setPage((p) => p + 1)}
             disabled={data.last}
-            className="px-4 py-2 rounded border disabled:opacity-40"
+            className="rounded border px-4 py-2 disabled:opacity-40"
           >
             Next
           </button>

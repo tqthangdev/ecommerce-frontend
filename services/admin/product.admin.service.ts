@@ -2,10 +2,7 @@ import { api } from "@/lib/api";
 import { Product, ProductVariant, ProductImage } from "@/types/product";
 import { PageResponse } from "@/types/api";
 
-export async function getProducts(
-  page = 0,
-  size = 10
-): Promise<PageResponse<Product>> {
+export async function getProducts(page = 0, size = 10): Promise<PageResponse<Product>> {
   const response = await api.get<{
     success: boolean;
     message: string;
@@ -46,10 +43,7 @@ export async function createProduct(payload: ProductPayload): Promise<Product> {
   return response.data.data;
 }
 
-export async function updateProduct(
-  id: number,
-  payload: ProductPayload
-): Promise<Product> {
+export async function updateProduct(id: number, payload: ProductPayload): Promise<Product> {
   const response = await api.put<{
     success: boolean;
     message: string;
@@ -99,10 +93,7 @@ export async function removeVariant(variantId: number): Promise<void> {
   await api.delete(`/api/admin/products/variants/${variantId}`);
 }
 
-export async function uploadImage(
-  productId: number,
-  file: File
-): Promise<ProductImage> {
+export async function uploadImage(productId: number, file: File): Promise<ProductImage> {
   const formData = new FormData();
   formData.append("file", file);
   const response = await api.post<{

@@ -43,9 +43,7 @@ export default function ProductDetail({ product }: Props) {
   const hasVariants = product.variants && product.variants.length > 0;
   const allColors = hasVariants ? uniqueValues(product.variants, "color") : [];
 
-  const [selectedColor, setSelectedColor] = useState(
-    allColors.length > 0 ? allColors[0] : ""
-  );
+  const [selectedColor, setSelectedColor] = useState(allColors.length > 0 ? allColors[0] : "");
 
   const sizesForColor = hasVariants
     ? uniqueValues(
@@ -110,24 +108,18 @@ export default function ProductDetail({ product }: Props) {
 
         <div className="flex flex-wrap gap-2">
           {product.category?.name && (
-            <span className="rounded bg-gray-100 px-3 py-1 text-sm">
-              {product.category.name}
-            </span>
+            <span className="rounded bg-gray-100 px-3 py-1 text-sm">{product.category.name}</span>
           )}
           {product.brand?.name && (
             <span className="rounded bg-blue-100 px-3 py-1 text-sm text-blue-800">
               {product.brand.name}
             </span>
           )}
-          <span className={`rounded px-3 py-1 text-sm ${stockColor}`}>
-            {stockLabel}
-          </span>
+          <span className={`rounded px-3 py-1 text-sm ${stockColor}`}>{stockLabel}</span>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-3xl font-bold text-red-600">
-            {price.toLocaleString("vi-VN")} đ
-          </span>
+          <span className="text-3xl font-bold text-red-600">{price.toLocaleString("vi-VN")} đ</span>
           {hasDiscount && (
             <>
               <span className="text-lg text-gray-400 line-through">
@@ -147,8 +139,7 @@ export default function ProductDetail({ product }: Props) {
             {allColors.length > 0 && (
               <div>
                 <h3 className="mb-2 font-semibold">
-                  Color:{" "}
-                  <span className="font-normal">{selectedColor}</span>
+                  Color: <span className="font-normal">{selectedColor}</span>
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {allColors.map((color) => (
@@ -171,18 +162,16 @@ export default function ProductDetail({ product }: Props) {
             {sizesForColor.length > 0 && (
               <div>
                 <h3 className="mb-2 font-semibold">
-                  Size:{" "}
-                  <span className="font-normal">{selectedSize}</span>
+                  Size: <span className="font-normal">{selectedSize}</span>
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {sizesForColor.map((size) => {
-                    const isAvailable =
-                      product.variants.some(
-                        (pv) =>
-                          String(pv.color) === selectedColor &&
-                          String(pv.size) === size &&
-                          pv.stockQuantity > 0
-                      );
+                    const isAvailable = product.variants.some(
+                      (pv) =>
+                        String(pv.color) === selectedColor &&
+                        String(pv.size) === size &&
+                        pv.stockQuantity > 0
+                    );
                     return (
                       <button
                         key={size}
@@ -192,8 +181,8 @@ export default function ProductDetail({ product }: Props) {
                           selectedSize === size
                             ? "border-black bg-black text-white"
                             : isAvailable
-                            ? "border-gray-300 hover:border-black"
-                            : "border-gray-200 text-gray-300 line-through cursor-not-allowed"
+                              ? "border-gray-300 hover:border-black"
+                              : "cursor-not-allowed border-gray-200 text-gray-300 line-through"
                         }`}
                       >
                         {size}
@@ -206,10 +195,7 @@ export default function ProductDetail({ product }: Props) {
           </div>
         )}
 
-        <AddToCartButton
-          product={product}
-          selectedVariant={selectedVariant}
-        />
+        <AddToCartButton product={product} selectedVariant={selectedVariant} />
       </div>
     </div>
   );

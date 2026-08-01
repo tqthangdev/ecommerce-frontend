@@ -43,30 +43,30 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md bg-white border rounded-3xl p-8">
+    <main className="flex min-h-screen items-center justify-center">
+      <div className="w-full max-w-md rounded-3xl border bg-white p-8">
         <h1 className="text-3xl font-black">Create Account</h1>
 
         {error && (
-          <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
             {error}
           </p>
         )}
 
         <input
-          className="mt-6 border p-3 rounded-xl w-full"
+          className="mt-6 w-full rounded-xl border p-3"
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <input
-          className="mt-4 border p-3 rounded-xl w-full"
+          className="mt-4 w-full rounded-xl border p-3"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <input
-          className="mt-4 border p-3 rounded-xl w-full"
+          className="mt-4 w-full rounded-xl border p-3"
           type="password"
           placeholder="Password"
           value={password}
@@ -75,7 +75,7 @@ export default function RegisterPage() {
         <button
           onClick={register}
           disabled={loading}
-          className="mt-6 bg-black text-white w-full py-3 rounded-full disabled:opacity-50"
+          className="mt-6 w-full rounded-full bg-black py-3 text-white disabled:opacity-50"
         >
           {loading ? "Creating account..." : "Register"}
         </button>

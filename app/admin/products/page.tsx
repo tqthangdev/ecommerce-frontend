@@ -26,17 +26,14 @@ export default function ProductsPage() {
   }, [load]);
 
   if (loading) {
-    return <Loading />
+    return <Loading />;
   }
 
   return (
     <div>
       <div className="mb-8 flex justify-between">
         <h1 className="text-3xl font-bold">Products</h1>
-        <Link
-          href="/admin/products/create"
-          className="rounded-lg bg-black px-4 py-2 text-white"
-        >
+        <Link href="/admin/products/create" className="rounded-lg bg-black px-4 py-2 text-white">
           + Add Product
         </Link>
       </div>

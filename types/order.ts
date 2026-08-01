@@ -1,11 +1,4 @@
-export type OrderStatus =
-  | "PENDING"
-  | "CONFIRMED"
-  | "PROCESSING"
-  | "SHIPPING"
-  | "DELIVERED"
-  | "CANCELLED"
-  | "REFUNDED";
+export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPING" | "DELIVERED" | "CANCELLED" | "REFUNDED";
 
 export type PaymentMethod = "COD" | "VNPAY" | "MOMO" | "STRIPE";
 export type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED";

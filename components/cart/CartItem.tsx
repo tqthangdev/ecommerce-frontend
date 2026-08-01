@@ -46,9 +46,7 @@ export default function CartItem({ item }: Props) {
           </p>
         )}
 
-        <p className="mt-2 text-red-600">
-          {price.toLocaleString("vi-VN")} đ
-        </p>
+        <p className="mt-2 text-red-600">{price.toLocaleString("vi-VN")} đ</p>
 
         <div className="mt-4 flex items-center gap-3">
           <button
@@ -68,9 +66,7 @@ export default function CartItem({ item }: Props) {
       </div>
 
       <div>
-        <p className="mb-4 font-semibold">
-          {(price * item.quantity).toLocaleString("vi-VN")} đ
-        </p>
+        <p className="mb-4 font-semibold">{(price * item.quantity).toLocaleString("vi-VN")} đ</p>
         <button
           onClick={() => removeItem(product.id, item.variant?.id)}
           className="text-sm text-red-500 hover:text-red-700"

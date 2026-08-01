@@ -43,25 +43,25 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6">
-      <div className="w-full max-w-md bg-white border rounded-3xl p-8 shadow-lg">
+    <main className="flex min-h-screen items-center justify-center px-6">
+      <div className="w-full max-w-md rounded-3xl border bg-white p-8 shadow-lg">
         <h1 className="text-3xl font-black">Login</h1>
-        <p className="text-gray-500 mt-2">Welcome back</p>
+        <p className="mt-2 text-gray-500">Welcome back</p>
 
         {error && (
-          <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
             {error}
           </p>
         )}
 
         <input
-          className="mt-8 border rounded-xl p-3 w-full"
+          className="mt-8 w-full rounded-xl border p-3"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <input
-          className="mt-4 border rounded-xl p-3 w-full"
+          className="mt-4 w-full rounded-xl border p-3"
           type="password"
           placeholder="Password"
           value={password}
@@ -70,14 +70,14 @@ export default function LoginPage() {
         <button
           onClick={handleLogin}
           disabled={loading}
-          className="mt-6 w-full bg-black text-white py-3 rounded-full font-bold disabled:opacity-50"
+          className="mt-6 w-full rounded-full bg-black py-3 font-bold text-white disabled:opacity-50"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
 
         <p className="mt-6 text-center text-gray-500">
           Don&apos;t have account?
-          <Link href="/register" className="text-black font-bold ml-2">
+          <Link href="/register" className="ml-2 font-bold text-black">
             Register
           </Link>
         </p>

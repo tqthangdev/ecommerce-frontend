@@ -11,106 +11,103 @@ import { clearAuth } from "@/lib/api";
 import { logout as logoutApi } from "@/lib/auth.service";
 
 export default function FooterAccount() {
-    const user = useAuthStore((state) => state.user);
-    const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-    const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
 
-    function handleLogout() {
-        setShowLogoutConfirm(true);
+  function handleLogout() {
+    setShowLogoutConfirm(true);
+  }
+
+  async function confirmLogout() {
+    setShowLogoutConfirm(false);
+
+    try {
+      await logoutApi();
+    } catch {
+      // Ignore logout API error
     }
 
-    async function confirmLogout() {
-        setShowLogoutConfirm(false);
+    clearAuth();
+    logout();
 
-        try {
-            await logoutApi();
-        } catch {
-            // Ignore logout API error
-        }
+    window.location.href = "/";
+  }
 
-        clearAuth();
-        logout();
+  function cancelLogout() {
+    setShowLogoutConfirm(false);
+  }
 
-        window.location.href = "/";
-    }
+  return (
+    <>
+      <div>
+        <h3 className="mb-4 font-semibold text-white">Account</h3>
 
-    function cancelLogout() {
-        setShowLogoutConfirm(false);
-    }
+        <ul className="space-y-3 text-sm">
+          {user ? (
+            <>
+              <li>
+                <Link href="/profile" className="transition hover:text-white">
+                  My Profile
+                </Link>
+              </li>
 
-    return (
-        <>
-            <div>
-                <h3 className="mb-4 font-semibold text-white">Account</h3>
+              <li>
+                <Link href="/orders" className="transition hover:text-white">
+                  My Orders
+                </Link>
+              </li>
 
-                <ul className="space-y-3 text-sm">
-                    {user ? (
-                        <>
-                            <li>
-                                <Link href="/profile" className="transition hover:text-white">
-                                    My Profile
-                                </Link>
-                            </li>
+              <li>
+                <Link href="/cart" className="transition hover:text-white">
+                  My Cart
+                </Link>
+              </li>
 
-                            <li>
-                                <Link href="/orders" className="transition hover:text-white">
-                                    My Orders
-                                </Link>
-                            </li>
+              {isAdmin && (
+                <li>
+                  <Link href="/admin" className="transition hover:text-white">
+                    Admin Dashboard
+                  </Link>
+                </li>
+              )}
 
-                            <li>
-                                <Link href="/cart" className="transition hover:text-white">
-                                    My Cart
-                                </Link>
-                            </li>
+              <li>
+                <button onClick={handleLogout} className="transition hover:text-white">
+                  Logout
+                </button>
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <Link href="/login" className="transition hover:text-white">
+                  Login
+                </Link>
+              </li>
 
-                            {isAdmin && (
-                                <li>
-                                    <Link href="/admin" className="transition hover:text-white">
-                                        Admin Dashboard
-                                    </Link>
-                                </li>
-                            )}
+              <li>
+                <Link href="/register" className="transition hover:text-white">
+                  Register
+                </Link>
+              </li>
+            </>
+          )}
+        </ul>
+      </div>
 
-                            <li>
-                                <button
-                                    onClick={handleLogout}
-                                    className="transition hover:text-white"
-                                >
-                                    Logout
-                                </button>
-                            </li>
-                        </>
-                    ) : (
-                        <>
-                            <li>
-                                <Link href="/login" className="transition hover:text-white">
-                                    Login
-                                </Link>
-                            </li>
-
-                            <li>
-                                <Link href="/register" className="transition hover:text-white">
-                                    Register
-                                </Link>
-                            </li>
-                        </>
-                    )}
-                </ul>
-            </div>
-
-            <ConfirmDialog
-                open={showLogoutConfirm}
-                title="Confirm Logout"
-                description="Are you sure you want to log out?"
-                confirmText="Yes"
-                cancelText="No"
-                onConfirm={confirmLogout}
-                onCancel={cancelLogout}
-            />
-        </>
-    );
+      <ConfirmDialog
+        open={showLogoutConfirm}
+        title="Confirm Logout"
+        description="Are you sure you want to log out?"
+        confirmText="Yes"
+        cancelText="No"
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+      />
+    </>
+  );
 }

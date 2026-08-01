@@ -33,10 +33,7 @@ export default function AdminBrandsPage() {
     <div>
       <div className="mb-8 flex justify-between">
         <h1 className="text-3xl font-bold">Brands</h1>
-        <Link
-          href="/admin/brands/create"
-          className="rounded-lg bg-black px-4 py-2 text-white"
-        >
+        <Link href="/admin/brands/create" className="rounded-lg bg-black px-4 py-2 text-white">
           + Add Brand
         </Link>
       </div>

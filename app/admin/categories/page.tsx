@@ -33,10 +33,7 @@ export default function AdminCategoriesPage() {
     <div>
       <div className="mb-8 flex justify-between">
         <h1 className="text-3xl font-bold">Categories</h1>
-        <Link
-          href="/admin/categories/create"
-          className="rounded-lg bg-black px-4 py-2 text-white"
-        >
+        <Link href="/admin/categories/create" className="rounded-lg bg-black px-4 py-2 text-white">
           + Add Category
         </Link>
       </div>

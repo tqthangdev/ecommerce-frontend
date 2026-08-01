@@ -47,17 +47,15 @@ export default function ProductList({
         setTotalPages(data.totalPages);
       })
       .catch((err) => {
-        debugger
-        let messeage = err?.message ?? "Failed to load products. Please try again."
+        debugger;
+        let messeage = err?.message ?? "Failed to load products. Please try again.";
         setError(messeage);
       })
       .finally(() => setLoading(false));
   }, [keyword, categoryId, minPrice, maxPrice, sort, page]);
 
   if (loading) {
-    return (
-      <Loading />
-    );
+    return <Loading />;
   }
 
   if (error) {
@@ -69,19 +67,14 @@ export default function ProductList({
   }
 
   if (products.length === 0) {
-    return (
-      <Loading />
-    );
+    return <Loading />;
   }
 
   return (
     <>
       <ProductGrid products={products} />
       {totalPages > 1 && (
-        <ProductPagination
-          currentPage={Number(page ?? 1)}
-          totalPages={totalPages}
-        />
+        <ProductPagination currentPage={Number(page ?? 1)} totalPages={totalPages} />
       )}
     </>
   );

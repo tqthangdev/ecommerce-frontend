@@ -44,7 +44,8 @@ export default function CreateProductPage() {
     loadOptions();
   }, []);
 
-  const isValid = name.trim().length >= 2 && basePrice !== "" && categoryId !== "" && brandId !== "";
+  const isValid =
+    name.trim().length >= 2 && basePrice !== "" && categoryId !== "" && brandId !== "";
 
   async function submit() {
     if (!isValid) return;
@@ -83,10 +84,8 @@ export default function CreateProductPage() {
     <main className="mx-auto max-w-2xl space-y-6 p-10">
       <div className="flex items-center justify-between">
         <div>
-            <h1 className="text-3xl font-bold">Create Product</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Add a new product to the catalog.
-            </p>
+          <h1 className="text-3xl font-bold">Create Product</h1>
+          <p className="mt-1 text-sm text-gray-500">Add a new product to the catalog.</p>
         </div>
         <button
           onClick={() => router.push("/admin/products")}
@@ -98,11 +97,9 @@ export default function CreateProductPage() {
 
       <section className="space-y-5 rounded-xl border bg-white p-6">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Name
-          </label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
           <input
-            className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-black focus:outline-none"
             placeholder="e.g. Classic Cotton Tee"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -110,11 +107,9 @@ export default function CreateProductPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Description
-          </label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
           <textarea
-            className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-black focus:outline-none"
             rows={4}
             placeholder="Short product description"
             value={description}
@@ -124,39 +119,33 @@ export default function CreateProductPage() {
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Base Price
-            </label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Base Price</label>
             <input
               type="number"
               min={0}
-              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-black focus:outline-none"
               placeholder="0"
               value={basePrice}
               onChange={(e) => setBasePrice(e.target.value)}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Discount %
-            </label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Discount %</label>
             <input
               type="number"
               min={0}
               max={100}
-              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-black focus:outline-none"
               value={discountPercent}
               onChange={(e) => setDiscountPercent(e.target.value)}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Stock
-            </label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Stock</label>
             <input
               type="number"
               min={0}
-              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-black focus:outline-none"
               value={stockQuantity}
               onChange={(e) => setStockQuantity(e.target.value)}
             />
@@ -165,11 +154,9 @@ export default function CreateProductPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Category
-            </label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Category</label>
             <select
-              className="w-full rounded-lg border bg-white p-2 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full rounded-lg border bg-white p-2 focus:ring-2 focus:ring-black focus:outline-none"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
             >
@@ -182,11 +169,9 @@ export default function CreateProductPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Brand
-            </label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Brand</label>
             <select
-              className="w-full rounded-lg border bg-white p-2 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full rounded-lg border bg-white p-2 focus:ring-2 focus:ring-black focus:outline-none"
               value={brandId}
               onChange={(e) => setBrandId(e.target.value)}
             >
@@ -201,9 +186,7 @@ export default function CreateProductPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Product Image
-          </label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Product Image</label>
           <input
             type="file"
             accept="image/*"
@@ -217,11 +200,7 @@ export default function CreateProductPage() {
 
         <div className="flex gap-6 border-t pt-4">
           <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={active}
-              onChange={(e) => setActive(e.target.checked)}
-            />
+            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
             Active
           </label>
           <label className="flex items-center gap-2 text-sm">
@@ -234,9 +213,7 @@ export default function CreateProductPage() {
           </label>
         </div>
 
-        {error && (
-          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
 
         <div className="flex gap-3 pt-2">
           <button

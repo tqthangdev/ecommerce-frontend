@@ -65,11 +65,7 @@ export default function CreateBrandPage() {
         </div>
 
         <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={active}
-            onChange={(e) => setActive(e.target.checked)}
-          />
+          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
           Active
         </label>
 

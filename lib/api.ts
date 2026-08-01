@@ -1,12 +1,8 @@
 // lib/api.ts
-import axios, {
-  AxiosError,
-  InternalAxiosRequestConfig,
-} from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore, User } from "@/stores/auth.store";
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -39,20 +35,15 @@ export function clearAuth() {
   useAuthStore.getState().setAccessToken(null);
 }
 
-api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = useAuthStore.getState().accessToken;
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = useAuthStore.getState().accessToken;
 
-    if (token) {
-      config.headers.set(
-        "Authorization",
-        `Bearer ${token}`
-      );
-    }
-
-    return config;
+  if (token) {
+    config.headers.set("Authorization", `Bearer ${token}`);
   }
-);
+
+  return config;
+});
 
 let isRefreshing = false;
 
@@ -89,24 +80,16 @@ api.interceptors.response.use(
   (response) => response,
 
   async (error: AxiosError) => {
-    const originalRequest =
-      error.config as InternalAxiosRequestConfig & {
-        _retry?: boolean;
-      };
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
-    const isExcludedFromRefresh =
-      AUTH_ENDPOINTS_EXCLUDED_FROM_REFRESH.some(
-        (path) => originalRequest.url?.includes(path)
-      );
+    const isExcludedFromRefresh = AUTH_ENDPOINTS_EXCLUDED_FROM_REFRESH.some((path) =>
+      originalRequest.url?.includes(path)
+    );
 
-    if (
-      error.response?.status !== 401 ||
-      originalRequest._retry ||
-      isExcludedFromRefresh
-    ) {
-      return Promise.reject(
-        new Error(getErrorMessage(error))
-      );
+    if (error.response?.status !== 401 || originalRequest._retry || isExcludedFromRefresh) {
+      return Promise.reject(new Error(getErrorMessage(error)));
     }
 
     originalRequest._retry = true;
@@ -119,10 +102,7 @@ api.interceptors.response.use(
             return;
           }
 
-          originalRequest.headers.set(
-            "Authorization",
-            `Bearer ${token}`
-          );
+          originalRequest.headers.set("Authorization", `Bearer ${token}`);
 
           resolve(api(originalRequest));
         });
@@ -140,10 +120,7 @@ api.interceptors.response.use(
 
       pendingQueue = [];
 
-      originalRequest.headers.set(
-        "Authorization",
-        `Bearer ${accessToken}`
-      );
+      originalRequest.headers.set("Authorization", `Bearer ${accessToken}`);
 
       return api(originalRequest);
     } catch {
@@ -155,16 +132,11 @@ api.interceptors.response.use(
 
       clearAuth();
 
-      if (
-        typeof window !== "undefined" &&
-        window.location.pathname !== "/login"
-      ) {
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
         window.location.href = "/login";
       }
 
-      return Promise.reject(
-        new Error("Session expired.")
-      );
+      return Promise.reject(new Error("Session expired."));
     } finally {
       isRefreshing = false;
     }
@@ -177,8 +149,7 @@ export function getErrorMessage(err: unknown): string {
       return "Unable to connect to the server.";
     }
 
-    const data =
-      err.response.data as ApiResponse<unknown> | undefined;
+    const data = err.response.data as ApiResponse<unknown> | undefined;
 
     switch (err.response.status) {
       case 401:

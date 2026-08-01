@@ -40,7 +40,9 @@ export default function CheckoutForm() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getAddresses().then(setAddresses).catch(() => {});
+    getAddresses()
+      .then(setAddresses)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -106,23 +108,23 @@ export default function CheckoutForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Error */}
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+        <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
           {error}
         </p>
       )}
 
       {/* Cart Items */}
-      <div className="rounded-xl border p-6 space-y-4">
+      <div className="space-y-4 rounded-xl border p-6">
         <h2 className="text-xl font-bold">Order Items</h2>
         {items.map((item) => (
           <div key={`${item.product.id}-${item.variant?.id}`} className="flex gap-4">
             <img
               src={getThumbnail(item.product)}
               alt={item.product.name}
-              className="w-16 h-16 rounded object-cover"
+              className="h-16 w-16 rounded object-cover"
             />
             <div className="flex-1">
-              <p className="font-medium text-sm">{item.product.name}</p>
+              <p className="text-sm font-medium">{item.product.name}</p>
               {item.variant && (
                 <p className="text-xs text-gray-500">
                   {item.variant.color} / {item.variant.size}
@@ -130,15 +132,18 @@ export default function CheckoutForm() {
               )}
               <p className="text-xs text-gray-500">x{item.quantity}</p>
             </div>
-            <p className="font-semibold text-sm">
-              {((item.variant?.price ?? item.product.effectivePrice) * item.quantity).toLocaleString("vi-VN")} đ
+            <p className="text-sm font-semibold">
+              {(
+                (item.variant?.price ?? item.product.effectivePrice) * item.quantity
+              ).toLocaleString("vi-VN")}{" "}
+              đ
             </p>
           </div>
         ))}
       </div>
 
       {/* Addresses */}
-      <div className="rounded-xl border p-6 space-y-4">
+      <div className="space-y-4 rounded-xl border p-6">
         <h2 className="text-xl font-bold">Shipping Address</h2>
 
         {!showNewAddress && addresses.length > 0 && (
@@ -146,7 +151,7 @@ export default function CheckoutForm() {
             {addresses.map((addr) => (
               <label
                 key={addr.id}
-                className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition ${
+                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${
                   selectedAddressId === addr.id
                     ? "border-black bg-gray-50"
                     : "border-gray-200 hover:border-gray-400"
@@ -159,11 +164,13 @@ export default function CheckoutForm() {
                   onChange={() => setSelectedAddressId(addr.id)}
                 />
                 <div className="flex-1">
-                  <p className="font-medium">{addr.recipientName} · {addr.phone}</p>
+                  <p className="font-medium">
+                    {addr.recipientName} · {addr.phone}
+                  </p>
                   <p className="text-sm text-gray-500">{addr.fullAddress}</p>
                 </div>
                 {addr.label && (
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded">{addr.label}</span>
+                  <span className="rounded bg-gray-100 px-2 py-1 text-xs">{addr.label}</span>
                 )}
               </label>
             ))}
@@ -197,21 +204,35 @@ export default function CheckoutForm() {
             <input
               placeholder="City / Province"
               value={newAddress.provinceName}
-              onChange={(e) => setNewAddress({ ...newAddress, provinceName: e.target.value, provinceCode: e.target.value })}
+              onChange={(e) =>
+                setNewAddress({
+                  ...newAddress,
+                  provinceName: e.target.value,
+                  provinceCode: e.target.value,
+                })
+              }
               required={showNewAddress}
               className="rounded border p-3"
             />
             <input
               placeholder="District"
               value={newAddress.districtName}
-              onChange={(e) => setNewAddress({ ...newAddress, districtName: e.target.value, districtCode: e.target.value })}
+              onChange={(e) =>
+                setNewAddress({
+                  ...newAddress,
+                  districtName: e.target.value,
+                  districtCode: e.target.value,
+                })
+              }
               required={showNewAddress}
               className="rounded border p-3"
             />
             <input
               placeholder="Ward"
               value={newAddress.wardName}
-              onChange={(e) => setNewAddress({ ...newAddress, wardName: e.target.value, wardCode: e.target.value })}
+              onChange={(e) =>
+                setNewAddress({ ...newAddress, wardName: e.target.value, wardCode: e.target.value })
+              }
               required={showNewAddress}
               className="rounded border p-3"
             />
@@ -227,7 +248,7 @@ export default function CheckoutForm() {
       </div>
 
       {/* Coupon */}
-      <div className="rounded-xl border p-6 space-y-3">
+      <div className="space-y-3 rounded-xl border p-6">
         <h2 className="text-xl font-bold">Coupon</h2>
         <div className="flex gap-2">
           <input
@@ -240,13 +261,13 @@ export default function CheckoutForm() {
       </div>
 
       {/* Payment Method */}
-      <div className="rounded-xl border p-6 space-y-3">
+      <div className="space-y-3 rounded-xl border p-6">
         <h2 className="text-xl font-bold">Payment Method</h2>
         <div className="space-y-2">
           {(["COD", "VNPAY", "MOMO"] as PaymentMethod[]).map((method) => (
             <label
               key={method}
-              className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition ${
+              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition ${
                 paymentMethod === method ? "border-black bg-gray-50" : "border-gray-200"
               }`}
             >
@@ -264,7 +285,7 @@ export default function CheckoutForm() {
       </div>
 
       {/* Notes */}
-      <div className="rounded-xl border p-6 space-y-3">
+      <div className="space-y-3 rounded-xl border p-6">
         <h2 className="text-xl font-bold">Order Notes</h2>
         <textarea
           placeholder="Optional notes for your order..."
@@ -276,7 +297,7 @@ export default function CheckoutForm() {
       </div>
 
       {/* Summary */}
-      <div className="rounded-xl border bg-gray-50 p-6 space-y-3">
+      <div className="space-y-3 rounded-xl border bg-gray-50 p-6">
         <div className="flex justify-between text-sm">
           <span>Subtotal</span>
           <span>{subtotal.toLocaleString("vi-VN")} đ</span>
@@ -285,7 +306,7 @@ export default function CheckoutForm() {
           <span>Shipping</span>
           <span>{shippingFee === 0 ? "FREE" : `${shippingFee.toLocaleString("vi-VN")} đ`}</span>
         </div>
-        <div className="flex justify-between font-bold text-lg pt-2 border-t">
+        <div className="flex justify-between border-t pt-2 text-lg font-bold">
           <span>Total</span>
           <span>{total.toLocaleString("vi-VN")} đ</span>
         </div>

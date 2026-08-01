@@ -80,9 +80,9 @@ export default function EditProductPage() {
         featured,
       });
       setProduct(updated);
-    } catch(err) {
-      console.error(err?.message)
-    }finally {
+    } catch (err) {
+      console.error(err?.message);
+    } finally {
       setSaving(false);
     }
   }
@@ -114,55 +114,105 @@ export default function EditProductPage() {
 
         <div>
           <label className="mb-1 block text-sm font-medium">Name</label>
-          <input className="w-full rounded-lg border p-2" value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            className="w-full rounded-lg border p-2"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium">Slug</label>
-          <input className="w-full rounded-lg border bg-gray-100 p-2 text-gray-500" value={product.slug} disabled />
+          <input
+            className="w-full rounded-lg border bg-gray-100 p-2 text-gray-500"
+            value={product.slug}
+            disabled
+          />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium">Description</label>
-          <textarea className="w-full rounded-lg border p-2" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
+          <textarea
+            className="w-full rounded-lg border p-2"
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="mb-1 block text-sm font-medium">Base Price</label>
-            <input type="number" readOnly className="w-full rounded-lg border p-2" value={basePrice} />
+            <input
+              type="number"
+              readOnly
+              className="w-full rounded-lg border p-2"
+              value={basePrice}
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Discount %</label>
-            <input type="number" className="w-full rounded-lg border p-2" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)} />
+            <input
+              type="number"
+              className="w-full rounded-lg border p-2"
+              value={discountPercent}
+              onChange={(e) => setDiscountPercent(e.target.value)}
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Stock</label>
-            <input type="number" readOnly className="w-full rounded-lg border p-2" value={stockQuantity} />
+            <input
+              type="number"
+              readOnly
+              className="w-full rounded-lg border p-2"
+              value={stockQuantity}
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-1 block text-sm font-medium">Category</label>
-            <select className="w-full rounded-lg border p-2" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <select
+              className="w-full rounded-lg border p-2"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Brand</label>
-            <select className="w-full rounded-lg border p-2" value={brandId} onChange={(e) => setBrandId(e.target.value)}>
-              {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            <select
+              className="w-full rounded-lg border p-2"
+              value={brandId}
+              onChange={(e) => setBrandId(e.target.value)}
+            >
+              {brands.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
 
         <div className="flex gap-6">
           <label className="flex items-center gap-2">
-            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Active
+            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />{" "}
+            Active
           </label>
           <label className="flex items-center gap-2">
-            <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} /> Featured
+            <input
+              type="checkbox"
+              checked={featured}
+              onChange={(e) => setFeatured(e.target.checked)}
+            />{" "}
+            Featured
           </label>
         </div>
 
@@ -175,7 +225,11 @@ export default function EditProductPage() {
         </button>
       </section>
 
-      <VariantsSection productId={productId} variants={product.variants} onChanged={refreshProduct} />
+      <VariantsSection
+        productId={productId}
+        variants={product.variants}
+        onChanged={refreshProduct}
+      />
       <ImagesSection productId={productId} images={product.images} onChanged={refreshProduct} />
     </div>
   );
@@ -204,11 +258,23 @@ function VariantsSection({
     setAdding(true);
     setError(null);
     try {
-      await addVariant(productId, { sku, color, size, price: Number(price), stockQuantity: Number(stockQuantity), imageUrl });
-      setSku(""); setColor(""); setSize(""); setPrice(""); setStockQuantity(""); setImageUrl("");
+      await addVariant(productId, {
+        sku,
+        color,
+        size,
+        price: Number(price),
+        stockQuantity: Number(stockQuantity),
+        imageUrl,
+      });
+      setSku("");
+      setColor("");
+      setSize("");
+      setPrice("");
+      setStockQuantity("");
+      setImageUrl("");
       onChanged();
     } catch (err: unknown) {
-      debugger
+      debugger;
       const message = err?.message || "Failed to add variant";
       setError(message);
     } finally {
@@ -224,7 +290,12 @@ function VariantsSection({
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b">
-              <th className="py-2">SKU</th><th>Color</th><th>Size</th><th>Price</th><th>Stock</th><th></th>
+              <th className="py-2">SKU</th>
+              <th>Color</th>
+              <th>Size</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -240,12 +311,45 @@ function VariantsSection({
         </table>
 
         <div className="grid grid-cols-6 gap-2 border-t pt-4">
-          <input className="rounded-lg border p-2" placeholder="SKU" value={sku} onChange={(e) => setSku(e.target.value)} />
-          <input className="rounded-lg border p-2" placeholder="Color" value={color} onChange={(e) => setColor(e.target.value)} />
-          <input className="rounded-lg border p-2" placeholder="Size" value={size} onChange={(e) => setSize(e.target.value)} />
-          <input type="number" className="rounded-lg border p-2" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} />
-          <input type="number" className="rounded-lg border p-2" placeholder="Stock" value={stockQuantity} onChange={(e) => setStockQuantity(e.target.value)} />
-          <button onClick={handleAdd} disabled={adding} className="rounded-lg bg-black px-3 py-2 text-white disabled:opacity-50">+ Add</button>
+          <input
+            className="rounded-lg border p-2"
+            placeholder="SKU"
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+          />
+          <input
+            className="rounded-lg border p-2"
+            placeholder="Color"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+          />
+          <input
+            className="rounded-lg border p-2"
+            placeholder="Size"
+            value={size}
+            onChange={(e) => setSize(e.target.value)}
+          />
+          <input
+            type="number"
+            className="rounded-lg border p-2"
+            placeholder="Price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+          <input
+            type="number"
+            className="rounded-lg border p-2"
+            placeholder="Stock"
+            value={stockQuantity}
+            onChange={(e) => setStockQuantity(e.target.value)}
+          />
+          <button
+            onClick={handleAdd}
+            disabled={adding}
+            className="rounded-lg bg-black px-3 py-2 text-white disabled:opacity-50"
+          >
+            + Add
+          </button>
         </div>
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </section>
@@ -280,7 +384,14 @@ function VariantRow({
   const [stockQuantity, setStockQuantity] = useState(String(variant.stockQuantity));
 
   async function handleSave() {
-    await updateVariant(variant.id, { sku: variant.sku, color: variant.color, size: variant.size, price: Number(price), stockQuantity: Number(stockQuantity), imageUrl: variant.imageUrl });
+    await updateVariant(variant.id, {
+      sku: variant.sku,
+      color: variant.color,
+      size: variant.size,
+      price: Number(price),
+      stockQuantity: Number(stockQuantity),
+      imageUrl: variant.imageUrl,
+    });
     setEditing(false);
     onUpdated();
   }
@@ -290,15 +401,43 @@ function VariantRow({
       <td className="py-2">{variant.sku}</td>
       <td>{variant.color}</td>
       <td>{variant.size}</td>
-      <td>{editing ? <input type="number" className="w-24 rounded border p-1" value={price} onChange={(e) => setPrice(e.target.value)} /> : variant.price}</td>
-      <td>{editing ? <input type="number" className="w-20 rounded border p-1" value={stockQuantity} onChange={(e) => setStockQuantity(e.target.value)} /> : variant.stockQuantity}</td>
+      <td>
+        {editing ? (
+          <input
+            type="number"
+            className="w-24 rounded border p-1"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+        ) : (
+          variant.price
+        )}
+      </td>
+      <td>
+        {editing ? (
+          <input
+            type="number"
+            className="w-20 rounded border p-1"
+            value={stockQuantity}
+            onChange={(e) => setStockQuantity(e.target.value)}
+          />
+        ) : (
+          variant.stockQuantity
+        )}
+      </td>
       <td className="space-x-2 text-right">
         {editing ? (
-          <button onClick={handleSave} className="text-green-600">Save</button>
+          <button onClick={handleSave} className="text-green-600">
+            Save
+          </button>
         ) : (
-          <button onClick={() => setEditing(true)} className="text-blue-600">Edit</button>
+          <button onClick={() => setEditing(true)} className="text-blue-600">
+            Edit
+          </button>
         )}
-        <button onClick={onDelete} className="text-red-600">Delete</button>
+        <button onClick={onDelete} className="text-red-600">
+          Delete
+        </button>
       </td>
     </tr>
   );
@@ -318,7 +457,12 @@ function ImagesSection({
 
   async function handleUpload(file: File) {
     setUploading(true);
-    try { await uploadImage(productId, file); onChanged(); } finally { setUploading(false); }
+    try {
+      await uploadImage(productId, file);
+      onChanged();
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -329,17 +473,42 @@ function ImagesSection({
         <div className="grid grid-cols-4 gap-4">
           {images.map((img) => (
             <div key={img.id} className="relative rounded-lg border p-2">
-              <img src={img.imageUrl} alt={img.altText} className="h-32 w-full rounded-md object-cover" />
-              {img.primary && <span className="absolute left-2 top-2 rounded bg-black px-2 py-0.5 text-xs text-white">Primary</span>}
+              <img
+                src={img.imageUrl}
+                alt={img.altText}
+                className="h-32 w-full rounded-md object-cover"
+              />
+              {img.primary && (
+                <span className="absolute top-2 left-2 rounded bg-black px-2 py-0.5 text-xs text-white">
+                  Primary
+                </span>
+              )}
               <div className="mt-2 flex justify-between text-xs">
-                {!img.primary && <button onClick={() => setPrimaryImage(img.id).then(onChanged)} className="text-blue-600">Set Primary</button>}
-                <button onClick={() => setDeleteTarget(img)} className="text-red-600">Remove</button>
+                {!img.primary && (
+                  <button
+                    onClick={() => setPrimaryImage(img.id).then(onChanged)}
+                    className="text-blue-600"
+                  >
+                    Set Primary
+                  </button>
+                )}
+                <button onClick={() => setDeleteTarget(img)} className="text-red-600">
+                  Remove
+                </button>
               </div>
             </div>
           ))}
         </div>
 
-        <input type="file" accept="image/*" disabled={uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); }} />
+        <input
+          type="file"
+          accept="image/*"
+          disabled={uploading}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleUpload(file);
+          }}
+        />
         {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
       </section>
 

@@ -83,10 +83,7 @@ function FilterContent() {
             onChange={(e) => setMaxPrice(e.target.value)}
             className="w-full rounded border p-2"
           />
-          <button
-            onClick={applyPrice}
-            className="w-full rounded bg-black py-2 text-white"
-          >
+          <button onClick={applyPrice} className="w-full rounded bg-black py-2 text-white">
             Apply
           </button>
         </div>

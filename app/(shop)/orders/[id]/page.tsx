@@ -73,7 +73,7 @@ export default function OrderDetailPage() {
   if (error && !order) return <div className="py-20 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
       <Link href="/orders" className="text-sm text-gray-500 hover:text-black">
         ← Back to orders
       </Link>
@@ -94,30 +94,42 @@ export default function OrderDetailPage() {
             </button>
           )}
           <div className="flex flex-col items-end gap-1">
-            <span className={`text-sm px-3 py-1 rounded-full font-medium ${order ? STATUS_COLORS[order.status] : ""}`}>
+            <span
+              className={`rounded-full px-3 py-1 text-sm font-medium ${order ? STATUS_COLORS[order.status] : ""}`}
+            >
               {order?.status}
             </span>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${order ? PAYMENT_STATUS_COLORS[order.paymentStatus] : ""}`}>
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs ${order ? PAYMENT_STATUS_COLORS[order.paymentStatus] : ""}`}
+            >
               Payment: {order?.paymentStatus}
             </span>
           </div>
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded p-3">{error}</p>}
+      {error && (
+        <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-500">{error}</p>
+      )}
 
       {/* Items */}
-      <div className="rounded-xl border p-6 space-y-4">
-        <h2 className="font-bold text-lg">Items</h2>
+      <div className="space-y-4 rounded-xl border p-6">
+        <h2 className="text-lg font-bold">Items</h2>
         {order.items.map((item) => (
           <div key={item.id} className="flex gap-4">
             {item.productImageUrl && (
-              <img src={item.productImageUrl} alt={item.productName} className="w-16 h-16 rounded object-cover" />
+              <img
+                src={item.productImageUrl}
+                alt={item.productName}
+                className="h-16 w-16 rounded object-cover"
+              />
             )}
             <div className="flex-1">
               <p className="font-medium">{item.productName}</p>
               {item.variantColor && (
-                <p className="text-xs text-gray-500">{item.variantColor} / {item.variantSize}</p>
+                <p className="text-xs text-gray-500">
+                  {item.variantColor} / {item.variantSize}
+                </p>
               )}
               <p className="text-xs text-gray-500">x{item.quantity}</p>
             </div>
@@ -127,15 +139,17 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Summary */}
-      <div className="rounded-xl border p-6 space-y-2">
-        <h2 className="font-bold text-lg mb-3">Order Summary</h2>
+      <div className="space-y-2 rounded-xl border p-6">
+        <h2 className="mb-3 text-lg font-bold">Order Summary</h2>
         <div className="flex justify-between text-sm">
           <span>Subtotal</span>
           <span>{order.subtotal.toLocaleString("vi-VN")} đ</span>
         </div>
         <div className="flex justify-between text-sm">
           <span>Shipping</span>
-          <span>{order.shippingFee === 0 ? "FREE" : `${order.shippingFee.toLocaleString("vi-VN")} đ`}</span>
+          <span>
+            {order.shippingFee === 0 ? "FREE" : `${order.shippingFee.toLocaleString("vi-VN")} đ`}
+          </span>
         </div>
         {order.discountAmount > 0 && (
           <div className="flex justify-between text-sm text-green-600">
@@ -143,7 +157,7 @@ export default function OrderDetailPage() {
             <span>-{order.discountAmount.toLocaleString("vi-VN")} đ</span>
           </div>
         )}
-        <div className="flex justify-between font-bold text-lg pt-2 border-t">
+        <div className="flex justify-between border-t pt-2 text-lg font-bold">
           <span>Total</span>
           <span>{order.totalAmount.toLocaleString("vi-VN")} đ</span>
         </div>
@@ -151,20 +165,22 @@ export default function OrderDetailPage() {
 
       {/* Shipping Address */}
       <div className="rounded-xl border p-6">
-        <h2 className="font-bold text-lg mb-3">Shipping Address</h2>
-        <p className="font-medium">{order.shippingAddress.recipientName} · {order.shippingAddress.phone}</p>
+        <h2 className="mb-3 text-lg font-bold">Shipping Address</h2>
+        <p className="font-medium">
+          {order.shippingAddress.recipientName} · {order.shippingAddress.phone}
+        </p>
         <p className="text-sm text-gray-500">{order.shippingAddress.fullAddress}</p>
       </div>
 
       {/* Payment */}
       <div className="rounded-xl border p-6">
-        <h2 className="font-bold text-lg mb-3">Payment</h2>
+        <h2 className="mb-3 text-lg font-bold">Payment</h2>
         <div className="flex justify-between text-sm">
           <span>Method</span>
           <span className="font-medium">{order.paymentMethod}</span>
         </div>
         {order.paymentReference && (
-          <div className="flex justify-between text-sm mt-1">
+          <div className="mt-1 flex justify-between text-sm">
             <span>Reference</span>
             <span className="font-mono text-xs">{order.paymentReference}</span>
           </div>
@@ -173,7 +189,7 @@ export default function OrderDetailPage() {
 
       {order.notes && (
         <div className="rounded-xl border p-6">
-          <h2 className="font-bold text-lg mb-2">Notes</h2>
+          <h2 className="mb-2 text-lg font-bold">Notes</h2>
           <p className="text-sm text-gray-600">{order.notes}</p>
         </div>
       )}

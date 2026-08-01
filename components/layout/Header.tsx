@@ -2,14 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import {
-  Search,
-  ShoppingCart,
-  User,
-  LayoutDashboard,
-  LogOut,
-  ShoppingBag,
-} from "lucide-react";
+import { Search, ShoppingCart, User, LayoutDashboard, LogOut, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -96,7 +89,7 @@ export default function Header() {
             <Link href="/cart" className="relative">
               <ShoppingCart size={26} />
               {cartCount > 0 && (
-                <span className="absolute -right-3 -top-3 flex h-5 w-5 items-center justify-center rounded-full bg-black text-xs text-white">
+                <span className="absolute -top-3 -right-3 flex h-5 w-5 items-center justify-center rounded-full bg-black text-xs text-white">
                   {cartCount}
                 </span>
               )}

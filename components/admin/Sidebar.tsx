@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Package,
-  FolderTree,
-  Tag,
-  ShoppingBag,
-} from "lucide-react";
+import { LayoutDashboard, Package, FolderTree, Tag, ShoppingBag } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -37,9 +31,7 @@ export default function Sidebar() {
               key={href}
               href={href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
-                isActive
-                  ? "bg-black text-white"
-                  : "text-gray-600 hover:bg-gray-100"
+                isActive ? "bg-black text-white" : "text-gray-600 hover:bg-gray-100"
               }`}
             >
               <Icon size={18} />

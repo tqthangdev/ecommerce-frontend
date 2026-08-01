@@ -1,24 +1,7 @@
 type Props = {
-    className?: string;
+  className?: string;
 };
 
-
-export default function Skeleton({
-    className = "",
-}: Props) {
-
-
-    return (
-
-        <div
-            className={`
-        animate-pulse
-        rounded-lg
-        bg-gray-200
-        ${className}
-      `}
-        />
-
-    );
-
+export default function Skeleton({ className = "" }: Props) {
+  return <div className={`animate-pulse rounded-lg bg-gray-200 ${className} `} />;
 }

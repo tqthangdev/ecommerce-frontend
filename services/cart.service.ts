@@ -34,7 +34,11 @@ export async function getCart(): Promise<CartResponse> {
   return res.data.data;
 }
 
-export async function addToCart(productId: number, quantity: number, variantId?: number): Promise<CartResponse> {
+export async function addToCart(
+  productId: number,
+  quantity: number,
+  variantId?: number
+): Promise<CartResponse> {
   const res = await api.post<ApiResponse<CartResponse>>("/api/cart", {
     productId,
     variantId,
@@ -48,13 +52,17 @@ export async function updateCartItem(
   quantity: number,
   variantId?: number
 ): Promise<CartResponse> {
-  const res = await api.put<ApiResponse<CartResponse>>("/api/cart/items", {
-    productId,
-    variantId,
-    quantity,
-  }, {
-    params: { productId, variantId },
-  });
+  const res = await api.put<ApiResponse<CartResponse>>(
+    "/api/cart/items",
+    {
+      productId,
+      variantId,
+      quantity,
+    },
+    {
+      params: { productId, variantId },
+    }
+  );
   return res.data.data;
 }
 

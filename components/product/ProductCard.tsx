@@ -18,10 +18,10 @@ export default function ProductCard({ product }: Props) {
   const hasDiscount = product.discountPercent > 0;
 
   return (
-    <div className="group bg-white rounded-lg border overflow-hidden hover:shadow-xl transition-all duration-300">
-      <div className="h-64 bg-gray-100 flex items-center justify-center overflow-hidden relative">
+    <div className="group overflow-hidden rounded-lg border bg-white transition-all duration-300 hover:shadow-xl">
+      <div className="relative flex h-64 items-center justify-center overflow-hidden bg-gray-100">
         {hasDiscount && (
-          <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+          <span className="absolute top-3 left-3 z-10 rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
             -{product.discountPercent}%
           </span>
         )}
@@ -29,24 +29,22 @@ export default function ProductCard({ product }: Props) {
         <img
           src={thumbnail}
           alt={product.name}
-          className="gryph w-full h-full rounded-lg object-cover group-hover:scale-105 transition duration-300"
+          className="gryph h-full w-full rounded-lg object-cover transition duration-300 group-hover:scale-105"
         />
       </div>
 
       <div className="p-5">
-        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+        <p className="mb-1 text-xs tracking-wide text-gray-400 uppercase">
           {product.category?.name}
         </p>
 
-        <h2 className="font-bold text-lg line-clamp-1">{product.name}</h2>
+        <h2 className="line-clamp-1 text-lg font-bold">{product.name}</h2>
 
-        <p className="text-gray-500 text-sm mt-2 line-clamp-2">
-          {product.description}
-        </p>
+        <p className="mt-2 line-clamp-2 text-sm text-gray-500">{product.description}</p>
 
-        <div className="flex justify-between items-center mt-5">
+        <div className="mt-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-xl text-red-600">
+            <span className="text-xl font-bold text-red-600">
               {product.effectivePrice.toLocaleString("vi-VN")} đ
             </span>
             {hasDiscount && (
@@ -58,7 +56,7 @@ export default function ProductCard({ product }: Props) {
 
           <Link
             href={`/products/${product.slug}`}
-            className="bg-black text-white px-4 py-2 rounded-full text-sm hover:bg-gray-800 transition"
+            className="rounded-full bg-black px-4 py-2 text-sm text-white transition hover:bg-gray-800"
           >
             View
           </Link>

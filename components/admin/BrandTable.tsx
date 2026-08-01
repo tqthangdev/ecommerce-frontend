@@ -73,9 +73,7 @@ export default function BrandTable({ brands, onDeleted }: Props) {
                 <td className="p-4">
                   <span
                     className={`rounded-full px-2 py-1 text-xs ${
-                      brand.active
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-500"
+                      brand.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
                     }`}
                   >
                     {brand.active ? "Active" : "Inactive"}

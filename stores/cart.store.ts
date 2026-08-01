@@ -43,21 +43,33 @@ export const useCartStore = create<CartState>()(
               viewCount: 0,
               category: { id: 0, name: "", slug: "" },
               brand: { id: 0, name: "", slug: "", active: true },
-              images: i.productImageUrl ? [{ id: 0, imageUrl: i.productImageUrl, altText: "", displayOrder: 0, primary: true }] : [],
+              images: i.productImageUrl
+                ? [
+                    {
+                      id: 0,
+                      imageUrl: i.productImageUrl,
+                      altText: "",
+                      displayOrder: 0,
+                      primary: true,
+                    },
+                  ]
+                : [],
               variants: [],
               createdAt: "",
               updatedAt: "",
             },
-            variant: i.variantId ? {
-              id: i.variantId,
-              sku: i.variantSku || "",
-              color: i.variantColor || "",
-              size: String(i.variantSize || ""),
-              price: i.effectivePrice,
-              stockQuantity: 0,
-              imageUrl: i.productImageUrl,
-              productId: i.productId,
-            } : undefined,
+            variant: i.variantId
+              ? {
+                  id: i.variantId,
+                  sku: i.variantSku || "",
+                  color: i.variantColor || "",
+                  size: String(i.variantSize || ""),
+                  price: i.effectivePrice,
+                  stockQuantity: 0,
+                  imageUrl: i.productImageUrl,
+                  productId: i.productId,
+                }
+              : undefined,
             quantity: i.quantity,
           }));
           const totalQuantity = cart.totalQuantity;
@@ -77,9 +89,7 @@ export const useCartStore = create<CartState>()(
         // Optimistic update
         if (exists) {
           set({
-            items: state.items.map((i) =>
-              itemKey(i) === key ? { ...i, quantity } : i
-            ),
+            items: state.items.map((i) => (itemKey(i) === key ? { ...i, quantity } : i)),
           });
         } else {
           set({ items: [...state.items, { ...item, quantity: item.quantity }] });
@@ -135,9 +145,7 @@ export const useCartStore = create<CartState>()(
 
         const newQty = item.quantity + 1;
         set({
-          items: state.items.map((i) =>
-            itemKey(i) === key ? { ...i, quantity: newQty } : i
-          ),
+          items: state.items.map((i) => (itemKey(i) === key ? { ...i, quantity: newQty } : i)),
         });
 
         try {
@@ -163,9 +171,7 @@ export const useCartStore = create<CartState>()(
 
         const newQty = item.quantity - 1;
         set({
-          items: state.items.map((i) =>
-            itemKey(i) === key ? { ...i, quantity: newQty } : i
-          ),
+          items: state.items.map((i) => (itemKey(i) === key ? { ...i, quantity: newQty } : i)),
         });
 
         try {
@@ -187,7 +193,11 @@ export const useCartStore = create<CartState>()(
         try {
           await cartApi.clearCart();
         } catch {
-          set({ items: state.items, totalQuantity: state.totalQuantity, totalAmount: state.totalAmount });
+          set({
+            items: state.items,
+            totalQuantity: state.totalQuantity,
+            totalAmount: state.totalAmount,
+          });
         }
       },
     }),

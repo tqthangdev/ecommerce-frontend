@@ -11,10 +11,7 @@ type Props = {
   onDeleted?: () => void;
 };
 
-export default function CategoryTable({
-  categories,
-  onDeleted,
-}: Props) {
+export default function CategoryTable({ categories, onDeleted }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<{
@@ -74,9 +71,7 @@ export default function CategoryTable({
                 <td className="p-4">
                   <span
                     className={`rounded-full px-2 py-1 text-xs ${
-                      category.active
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-500"
+                      category.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
                     }`}
                   >
                     {category.active ? "Active" : "Inactive"}
@@ -92,9 +87,7 @@ export default function CategoryTable({
                   </Link>
 
                   <button
-                    onClick={() =>
-                      handleDelete(category.id, category.name)
-                    }
+                    onClick={() => handleDelete(category.id, category.name)}
                     className="text-red-600 hover:underline"
                   >
                     Delete
