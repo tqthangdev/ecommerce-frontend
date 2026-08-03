@@ -1,24 +1,40 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Search, ShoppingCart, User, LayoutDashboard, LogOut, ShoppingBag } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  ShoppingBag,
+  ShoppingCart,
+  User,
+} from "lucide-react";
+
 import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
+
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+
 import { logout as logoutApi } from "@/lib/auth.service";
 import { clearAuth } from "@/lib/api";
 
 export default function Header() {
+  const pathname = usePathname();
+
+  const isHome = pathname === "/";
+
   const items = useCartStore((state) => state.items);
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+
   const isAdmin = user?.roles?.includes("ADMIN") ?? false;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,7 +43,9 @@ export default function Header() {
         setMenuOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
@@ -63,50 +81,65 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
+      <header
+        className={`sticky top-0 z-50 w-full border-b backdrop-blur-md ${
+          isHome
+            ? "-mt-20 border-white/10 bg-transparent text-white"
+            : "border-gray-200 bg-white/90 text-gray-900"
+        }`}
+      >
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-          {/* Logo */}
-          <Link href="/" className="text-3xl font-black tracking-tight">
+          <Link
+            href="/"
+            className={`text-3xl font-black tracking-tight ${
+              isHome ? "text-white" : "text-black"
+            }`}
+          >
             E-Shop
           </Link>
 
-          {/* Search */}
-          {/* <div className="hidden w-[420px] items-center gap-3 rounded-full bg-gray-100 px-5 py-3 md:flex">
-            <Search size={20} className="text-gray-500" />
-            <input
-              placeholder="Search products..."
-              className="w-full bg-transparent outline-none"
-            />
-          </div> */}
-
-          {/* Menu */}
-          <nav className="flex items-center gap-6">
-            <Link href="/products" className="transition hover:text-blue-600">
+          <nav className="flex items-center gap-8">
+            <Link
+              href="/products"
+              className={
+                isHome
+                  ? "text-gray-300 hover:text-white"
+                  : "text-gray-600 hover:text-black"
+              }
+            >
               Products
             </Link>
 
-            {/* Cart */}
-            <Link href="/cart" className="relative">
-              <ShoppingCart size={26} />
-              {cartCount > 0 && (
-                <span className="absolute -top-3 -right-3 flex h-5 w-5 items-center justify-center rounded-full bg-black text-xs text-white">
-                  {cartCount}
-                </span>
-              )}
+            <Link
+              href="/cart"
+              className={isHome ? "text-white" : "text-gray-900"}
+            >
+              <div className="relative">
+                <ShoppingCart size={26} />
+
+                {cartCount > 0 && (
+                  <span className="absolute -right-3 -top-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
             </Link>
 
-            {/* User */}
             {user ? (
-              <div className="relative" ref={menuRef}>
+              <div ref={menuRef} className="relative">
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-sm font-semibold text-white transition hover:opacity-90"
+                  className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${
+                    isHome
+                      ? "bg-white text-black"
+                      : "bg-black text-white"
+                  }`}
                 >
                   {initials}
                 </button>
 
                 {menuOpen && (
-                  <div className="absolute right-0 mt-3 w-56 overflow-hidden rounded-xl border bg-white shadow-lg">
+                  <div className="absolute right-0 mt-3 w-56 overflow-hidden rounded-xl border bg-white shadow-lg text-black">
                     <div className="border-b px-4 py-3">
                       <p className="truncate text-sm font-medium">{user.name}</p>
                       <p className="truncate text-xs text-gray-500">{user.email}</p>
@@ -143,7 +176,7 @@ export default function Header() {
                 )}
               </div>
             ) : (
-              <Link href="/login" className="transition hover:text-blue-600">
+              <Link href="/login">
                 <User size={26} />
               </Link>
             )}
@@ -158,7 +191,7 @@ export default function Header() {
         confirmText="Yes"
         cancelText="No"
         onConfirm={confirmLogout}
-        onCancel={cancelLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
       />
     </>
   );
