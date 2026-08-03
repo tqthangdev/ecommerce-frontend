@@ -93,6 +93,15 @@ export async function removeVariant(variantId: number): Promise<void> {
   await api.delete(`/api/admin/products/variants/${variantId}`);
 }
 
+export async function addImageByUrl(productId: number, imageUrl: string): Promise<ProductImage> {
+  const response = await api.post<{
+    success: boolean;
+    message: string;
+    data: ProductImage;
+  }>(`/api/admin/products/${productId}/images`, { imageUrl });
+  return response.data.data;
+}
+
 export async function uploadImage(productId: number, file: File): Promise<ProductImage> {
   const formData = new FormData();
   formData.append("file", file);

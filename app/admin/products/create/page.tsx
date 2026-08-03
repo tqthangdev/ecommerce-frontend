@@ -1,8 +1,9 @@
+//C:\Quin\ecommerce\frontend\app\admin\products\create\page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createProduct, uploadImage } from "@/services/admin/product.admin.service";
+import { createProduct, uploadImage, addImageByUrl } from "@/services/admin/product.admin.service";
 import { getCategories } from "@/services/admin/category.admin.service";
 import { getBrands } from "@/services/admin/brand.admin.service";
 import { Category, Brand } from "@/types/product";
@@ -24,7 +25,10 @@ export default function CreateProductPage() {
   const [brandId, setBrandId] = useState("");
   const [active, setActive] = useState(true);
   const [featured, setFeatured] = useState(false);
+
+  const [imageMode, setImageMode] = useState<"url" | "upload">("url");
   const [image, setImage] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -64,8 +68,10 @@ export default function CreateProductPage() {
         featured,
       });
 
-      if (image) {
+      if (imageMode === "upload" && image) {
         await uploadImage(product.id, image);
+      } else if (imageMode === "url" && imageUrl.trim()) {
+        await addImageByUrl(product.id, imageUrl.trim());
       }
 
       router.push("/admin/products");
@@ -187,12 +193,47 @@ export default function CreateProductPage() {
 
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Product Image</label>
-          <input
-            type="file"
-            accept="image/*"
-            className="w-full text-sm"
-            onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-          />
+
+          <div className="mb-2 flex items-center gap-4 text-sm">
+            <label className="flex items-center gap-1.5">
+              <input
+                type="radio"
+                name="create-image-mode"
+                value="url"
+                checked={imageMode === "url"}
+                onChange={() => setImageMode("url")}
+              />
+              URL
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input
+                type="radio"
+                name="create-image-mode"
+                value="upload"
+                checked={imageMode === "upload"}
+                onChange={() => setImageMode("upload")}
+              />
+              Upload
+            </label>
+          </div>
+
+          {imageMode === "url" ? (
+            <input
+              type="url"
+              placeholder="https://example.com/image.jpg"
+              className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-black focus:outline-none"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+            />
+          ) : (
+            <input
+              type="file"
+              accept="image/*"
+              className="w-full text-sm"
+              onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+            />
+          )}
+
           <p className="mt-1 text-xs text-gray-400">
             Optional — you can also add images after creating the product.
           </p>

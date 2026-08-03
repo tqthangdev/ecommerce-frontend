@@ -1,3 +1,4 @@
+//C:\Quin\ecommerce\frontend\app\admin\products\[id]\edit\page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,6 +10,7 @@ import {
   updateVariant,
   removeVariant,
   uploadImage,
+  addImageByUrl,
   removeImage,
   setPrimaryImage,
   VariantPayload,
@@ -18,6 +20,17 @@ import { getBrands } from "@/services/admin/brand.admin.service";
 import { Product, ProductVariant, ProductImage, Category, Brand } from "@/types/product";
 import Loading from "@/components/ui/Loading";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+
+const PRICE_UNIT_MULTIPLIER = {
+  million: 1_000_000,
+  thousand: 1_000,
+} as const;
+
+type PriceUnit = keyof typeof PRICE_UNIT_MULTIPLIER;
+
+function formatVND(value: number): string {
+  return `${Math.round(value).toLocaleString("vi-VN")}đ`;
+}
 
 export default function EditProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -235,6 +248,36 @@ export default function EditProductPage() {
   );
 }
 
+type VariantSortKey = "sku" | "color" | "size" | "price" | "stockQuantity";
+
+function SortableHeader({
+  label,
+  sortKey,
+  activeKey,
+  dir,
+  onSort,
+}: {
+  label: string;
+  sortKey: VariantSortKey;
+  activeKey: VariantSortKey;
+  dir: "asc" | "desc";
+  onSort: (key: VariantSortKey) => void;
+}) {
+  const isActive = activeKey === sortKey;
+  return (
+    <th className="py-2">
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className={`flex items-center gap-1 font-medium ${isActive ? "text-black" : "text-gray-500"}`}
+      >
+        {label}
+        <span className="text-xs">{isActive ? (dir === "asc" ? "▲" : "▼") : "↕"}</span>
+      </button>
+    </th>
+  );
+}
+
 function VariantsSection({
   productId,
   variants,
@@ -248,21 +291,45 @@ function VariantsSection({
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const [price, setPrice] = useState("");
+  const [priceUnit, setPriceUnit] = useState<PriceUnit>("million");
   const [stockQuantity, setStockQuantity] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ProductVariant | null>(null);
 
+  const [sortKey, setSortKey] = useState<VariantSortKey>("sku");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function handleSort(key: VariantSortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const sortedVariants = [...variants].sort((a, b) => {
+    let cmp = 0;
+    if (sortKey === "sku") cmp = a.sku.localeCompare(b.sku);
+    else if (sortKey === "color") cmp = a.color.localeCompare(b.color);
+    else if (sortKey === "size") cmp = a.size.localeCompare(b.size);
+    else if (sortKey === "price") cmp = a.price - b.price;
+    else if (sortKey === "stockQuantity") cmp = a.stockQuantity - b.stockQuantity;
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+
   async function handleAdd() {
     setAdding(true);
     setError(null);
     try {
+      const actualPrice = (Number(price) || 0) * PRICE_UNIT_MULTIPLIER[priceUnit];
       await addVariant(productId, {
         sku,
         color,
         size,
-        price: Number(price),
+        price: actualPrice,
         stockQuantity: Number(stockQuantity),
         imageUrl,
       });
@@ -270,6 +337,7 @@ function VariantsSection({
       setColor("");
       setSize("");
       setPrice("");
+      setPriceUnit("million");
       setStockQuantity("");
       setImageUrl("");
       onChanged();
@@ -290,16 +358,16 @@ function VariantsSection({
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b">
-              <th className="py-2">SKU</th>
-              <th>Color</th>
-              <th>Size</th>
-              <th>Price</th>
-              <th>Stock</th>
+              <SortableHeader label="SKU" sortKey="sku" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+              <SortableHeader label="Color" sortKey="color" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+              <SortableHeader label="Size" sortKey="size" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+              <SortableHeader label="Price" sortKey="price" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+              <SortableHeader label="Stock" sortKey="stockQuantity" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {variants.map((v) => (
+            {sortedVariants.map((v) => (
               <VariantRow
                 key={v.id}
                 variant={v}
@@ -310,46 +378,80 @@ function VariantsSection({
           </tbody>
         </table>
 
-        <div className="grid grid-cols-6 gap-2 border-t pt-4">
-          <input
-            className="rounded-lg border p-2"
-            placeholder="SKU"
-            value={sku}
-            onChange={(e) => setSku(e.target.value)}
-          />
-          <input
-            className="rounded-lg border p-2"
-            placeholder="Color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-          />
-          <input
-            className="rounded-lg border p-2"
-            placeholder="Size"
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
-          />
-          <input
-            type="number"
-            className="rounded-lg border p-2"
-            placeholder="Price"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          />
-          <input
-            type="number"
-            className="rounded-lg border p-2"
-            placeholder="Stock"
-            value={stockQuantity}
-            onChange={(e) => setStockQuantity(e.target.value)}
-          />
-          <button
-            onClick={handleAdd}
-            disabled={adding}
-            className="rounded-lg bg-black px-3 py-2 text-white disabled:opacity-50"
-          >
-            + Add
-          </button>
+        <div className="space-y-3 border-t pt-4">
+          <div className="flex gap-3">
+            <div className="w-52">
+              <label className="mb-1 block text-xs font-medium text-gray-500">SKU</label>
+              <input
+                className="w-full rounded-lg border p-2"
+                placeholder="SKU"
+                value={sku}
+                onChange={(e) => setSku(e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium text-gray-500">Color</label>
+              <input
+                className="w-full rounded-lg border p-2"
+                placeholder="Color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium text-gray-500">Size</label>
+              <input
+                className="w-full rounded-lg border p-2"
+                placeholder="Size"
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-end gap-3">
+            <div className="w-20">
+              <label className="mb-1 block text-xs font-medium text-gray-500">Stock</label>
+              <input
+                type="number"
+                className="w-full rounded-lg border p-2"
+                placeholder="Stock"
+                value={stockQuantity}
+                onChange={(e) => setStockQuantity(e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium text-gray-500">Price</label>
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="w-full rounded-lg border p-2"
+                  placeholder="Price"
+                  value={price}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "" || /^\d*\.?\d*$/.test(val)) setPrice(val);
+                  }}
+                />
+                <select
+                  className="shrink-0 rounded-lg border p-2 text-sm"
+                  value={priceUnit}
+                  onChange={(e) => setPriceUnit(e.target.value as PriceUnit)}
+                >
+                  <option value="million">million</option>
+                  <option value="thousand">thousand</option>
+                </select>
+              </div>
+            </div>
+            <button 
+              onClick={handleAdd}
+              disabled={adding}
+              className="rounded-lg bg-black px-5 py-2 text-white disabled:opacity-50"
+            >
+              + Add
+            </button>
+          </div>
         </div>
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </section>
@@ -380,44 +482,81 @@ function VariantRow({
   onUpdated: () => void;
 }) {
   const [editing, setEditing] = useState(false);
-  const [price, setPrice] = useState(String(variant.price));
+  const [unit, setUnit] = useState<PriceUnit>("million");
+  const [priceInput, setPriceInput] = useState(
+    String(variant.price / PRICE_UNIT_MULTIPLIER.million)
+  );
   const [stockQuantity, setStockQuantity] = useState(String(variant.stockQuantity));
+  const [saving, setSaving] = useState(false);
+
+  function startEditing() {
+    setUnit("million");
+    setPriceInput(String(variant.price / PRICE_UNIT_MULTIPLIER.million));
+    setStockQuantity(String(variant.stockQuantity));
+    setEditing(true);
+  }
+
+  function handleUnitChange(newUnit: PriceUnit) {
+    const currentActual = (Number(priceInput) || 0) * PRICE_UNIT_MULTIPLIER[unit];
+    setUnit(newUnit);
+    setPriceInput(String(currentActual / PRICE_UNIT_MULTIPLIER[newUnit]));
+  }
 
   async function handleSave() {
-    await updateVariant(variant.id, {
-      sku: variant.sku,
-      color: variant.color,
-      size: variant.size,
-      price: Number(price),
-      stockQuantity: Number(stockQuantity),
-      imageUrl: variant.imageUrl,
-    });
-    setEditing(false);
-    onUpdated();
+    setSaving(true);
+    try {
+      const actualPrice = (Number(priceInput) || 0) * PRICE_UNIT_MULTIPLIER[unit];
+      await updateVariant(variant.id, {
+        sku: variant.sku,
+        color: variant.color,
+        size: variant.size,
+        price: actualPrice,
+        stockQuantity: Number(stockQuantity),
+        imageUrl: variant.imageUrl,
+      });
+      setEditing(false);
+      onUpdated();
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <tr className="border-b">
-      <td className="py-2">{variant.sku}</td>
+      <td className="w-32 py-2">{variant.sku}</td>
       <td>{variant.color}</td>
       <td>{variant.size}</td>
       <td>
         {editing ? (
-          <input
-            type="number"
-            className="w-24 rounded border p-1"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          />
+          <div className="flex items-center gap-1">
+            <input
+              type="text"
+              inputMode="decimal"
+              className="w-14 rounded border p-1"
+              value={priceInput}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || /^\d*\.?\d*$/.test(val)) setPriceInput(val);
+              }}
+            />
+            <select
+              className="rounded border p-1 text-xs"
+              value={unit}
+              onChange={(e) => handleUnitChange(e.target.value as PriceUnit)}
+            >
+              <option value="million">million</option>
+              <option value="thousand">thousand</option>
+            </select>
+          </div>
         ) : (
-          variant.price
+          formatVND(variant.price)
         )}
       </td>
       <td>
         {editing ? (
           <input
             type="number"
-            className="w-20 rounded border p-1"
+            className="w-14 rounded border p-1"
             value={stockQuantity}
             onChange={(e) => setStockQuantity(e.target.value)}
           />
@@ -427,11 +566,11 @@ function VariantRow({
       </td>
       <td className="space-x-2 text-right">
         {editing ? (
-          <button onClick={handleSave} className="text-green-600">
-            Save
+          <button onClick={handleSave} disabled={saving} className="text-green-600 disabled:opacity-50">
+            {saving ? "Saving..." : "Save"}
           </button>
         ) : (
-          <button onClick={() => setEditing(true)} className="text-blue-600">
+          <button onClick={startEditing} className="text-blue-600">
             Edit
           </button>
         )}
@@ -452,16 +591,38 @@ function ImagesSection({
   images: ProductImage[];
   onChanged: () => void;
 }) {
+  const [mode, setMode] = useState<"url" | "upload">("url");
   const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [submittingUrl, setSubmittingUrl] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ProductImage | null>(null);
 
   async function handleUpload(file: File) {
     setUploading(true);
+    setError(null);
     try {
       await uploadImage(productId, file);
       onChanged();
+    } catch (err: any) {
+      setError(err?.message || "Failed to upload image");
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handleAddByUrl() {
+    if (!imageUrl.trim()) return;
+    setSubmittingUrl(true);
+    setError(null);
+    try {
+      await addImageByUrl(productId, imageUrl.trim());
+      setImageUrl("");
+      onChanged();
+    } catch (err: any) {
+      setError(err?.message || "Failed to add image");
+    } finally {
+      setSubmittingUrl(false);
     }
   }
 
@@ -500,16 +661,63 @@ function ImagesSection({
           ))}
         </div>
 
-        <input
-          type="file"
-          accept="image/*"
-          disabled={uploading}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleUpload(file);
-          }}
-        />
-        {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+        <div className="flex items-center gap-4 border-t pt-4 text-sm">
+          <label className="flex items-center gap-1.5">
+            <input
+              type="radio"
+              name="image-mode"
+              value="url"
+              checked={mode === "url"}
+              onChange={() => setMode("url")}
+            />
+            URL
+          </label>
+          <label className="flex items-center gap-1.5">
+            <input
+              type="radio"
+              name="image-mode"
+              value="upload"
+              checked={mode === "upload"}
+              onChange={() => setMode("upload")}
+            />
+            Upload
+          </label>
+        </div>
+
+        {mode === "url" ? (
+          <div className="flex gap-2">
+            <input
+              type="url"
+              placeholder="https://example.com/image.jpg"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              disabled={submittingUrl}
+              className="flex-1 rounded-lg border p-2"
+            />
+            <button
+              onClick={handleAddByUrl}
+              disabled={submittingUrl || !imageUrl.trim()}
+              className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50"
+            >
+              {submittingUrl ? "Adding..." : "Add"}
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              type="file"
+              accept="image/*"
+              disabled={uploading}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleUpload(file);
+              }}
+            />
+            {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+          </>
+        )}
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
       </section>
 
       <ConfirmDialog
