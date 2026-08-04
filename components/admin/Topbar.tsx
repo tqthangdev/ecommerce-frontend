@@ -4,13 +4,35 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Store, LogOut } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
+import { logout as logoutApi } from "@/lib/auth.service";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 export default function Topbar() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  function handleLogout() {
+    setMenuOpen(false);
+    setShowLogoutConfirm(true);
+  }
+
+  async function confirmLogout() {
+    setShowLogoutConfirm(false);
+    try {
+      await logoutApi();
+    } finally {
+      logout();
+      window.location.href = "/login";
+    }
+  }
+
+  function cancelLogout() {
+    setShowLogoutConfirm(false);
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -32,6 +54,7 @@ export default function Topbar() {
     : "";
 
   return (
+    <>
     <header className="flex h-20 items-center justify-between border-b bg-white px-8">
       <div />
 
@@ -59,10 +82,7 @@ export default function Topbar() {
                 <p className="truncate text-xs text-gray-500">{user?.email}</p>
               </div>
               <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  logout();
-                }}
+                onClick={handleLogout}
                 className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50"
               >
                 <LogOut size={16} />
@@ -73,5 +93,15 @@ export default function Topbar() {
         </div>
       </div>
     </header>
+    <ConfirmDialog
+      open={showLogoutConfirm}
+      title="Confirm Logout"
+      description="Are you sure you want to log out?"
+      confirmText="Yes"
+      cancelText="No"
+      onConfirm={confirmLogout}
+      onCancel={() => setShowLogoutConfirm(false)}
+    />
+    </>
   );
 }

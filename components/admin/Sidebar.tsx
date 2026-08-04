@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, FolderTree, Tag, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Users } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/brands", label: "Brands", icon: Tag },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/admin/users", label: "Users", icon: Users },
 ];
 
 export default function Sidebar() {

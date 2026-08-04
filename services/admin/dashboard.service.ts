@@ -1,4 +1,5 @@
 import { api, ApiResponse } from "@/lib/api";
+import { request } from "@/lib/request";
 
 export interface DashboardStats {
   totalProducts: number;
@@ -17,12 +18,19 @@ export interface RecentOrder {
   paymentMethod: string;
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
-  const res = await api.get<ApiResponse<DashboardStats>>("/api/admin/dashboard/stats");
-  return res.data.data;
-}
+export const getDashboardStats = () =>
+  request(
+    api.get<ApiResponse<DashboardStats>>("/api/admin/dashboard/stats"),
+    {
+      totalUsers: 0,
+      totalProducts: 0,
+      totalOrders: 0,
+      totalRevenue: 0,
+    }
+  );
 
-export async function getRecentOrders(): Promise<RecentOrder[]> {
-  const res = await api.get<ApiResponse<RecentOrder[]>>("/api/admin/dashboard/recent-orders");
-  return res.data.data;
-}
+export const getRecentOrders = () =>
+  request(
+    api.get<ApiResponse<RecentOrder[]>>("/api/admin/dashboard/recent-orders"),
+    []
+  );

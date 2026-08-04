@@ -200,6 +200,11 @@ export const useCartStore = create<CartState>()(
           });
         }
       },
+
+      reset: () => {
+        set({ items: [], totalQuantity: 0, totalAmount: 0, });
+      },
+
     }),
     {
       name: "shopping-cart",

@@ -1,4 +1,5 @@
 import { api, ApiResponse } from "@/lib/api";
+import { request } from "@/lib/request";
 
 export interface CartItem {
   productId: number;
@@ -29,9 +30,20 @@ export interface CartItemResponse {
   subtotal: number;
 }
 
+const EMPTY_CART: CartResponse = {
+  items: [],
+  totalItems: 0,
+  totalQuantity: 0,
+  subtotal: 0,
+  discount: 0,
+  total: 0,
+};
+
 export async function getCart(): Promise<CartResponse> {
-  const res = await api.get<ApiResponse<CartResponse>>("/api/cart");
-  return res.data.data;
+  return request(
+    api.get<ApiResponse<CartResponse>>("/api/cart"),
+    EMPTY_CART
+  );
 }
 
 export async function addToCart(
@@ -39,12 +51,14 @@ export async function addToCart(
   quantity: number,
   variantId?: number
 ): Promise<CartResponse> {
-  const res = await api.post<ApiResponse<CartResponse>>("/api/cart", {
-    productId,
-    variantId,
-    quantity,
-  });
-  return res.data.data;
+  return request(
+    api.post<ApiResponse<CartResponse>>("/api/cart", {
+      productId,
+      variantId,
+      quantity,
+    }),
+    EMPTY_CART
+  );
 }
 
 export async function updateCartItem(
@@ -52,27 +66,36 @@ export async function updateCartItem(
   quantity: number,
   variantId?: number
 ): Promise<CartResponse> {
-  const res = await api.put<ApiResponse<CartResponse>>(
-    "/api/cart/items",
-    {
-      productId,
-      variantId,
-      quantity,
-    },
-    {
-      params: { productId, variantId },
-    }
+  return request(
+    api.put<ApiResponse<CartResponse>>(
+      "/api/cart/items",
+      {
+        productId,
+        variantId,
+        quantity,
+      },
+      {
+        params: { productId, variantId },
+      }
+    ),
+    EMPTY_CART
   );
-  return res.data.data;
 }
 
-export async function removeCartItem(productId: number, variantId?: number): Promise<CartResponse> {
-  const res = await api.delete<ApiResponse<CartResponse>>("/api/cart/items", {
-    params: { productId, variantId },
-  });
-  return res.data.data;
+export async function removeCartItem(
+  productId: number,
+  variantId?: number
+): Promise<CartResponse> {
+  return request(
+    api.delete<ApiResponse<CartResponse>>("/api/cart/items", {
+      params: { productId, variantId },
+    }),
+    EMPTY_CART
+  );
 }
 
 export async function clearCart(): Promise<void> {
-  await api.delete("/api/cart");
+  try {
+    await api.delete("/api/cart");
+  } catch {}
 }

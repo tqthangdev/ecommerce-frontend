@@ -1,4 +1,6 @@
-import { api } from "@/lib/api";
+import { api, ApiResponse } from "@/lib/api";
+import { request } from "@/lib/request";
+import { Product } from "@/types/product";
 
 export interface CreateProductRequest {
   name: string;
@@ -9,8 +11,11 @@ export interface CreateProductRequest {
   image?: File;
 }
 
-export async function createProduct(data: CreateProductRequest) {
+export async function createProduct(
+  data: CreateProductRequest
+): Promise<Product> {
   const formData = new FormData();
+
   formData.append("name", data.name);
   formData.append("description", data.description);
   formData.append("price", String(data.price));
@@ -21,9 +26,16 @@ export async function createProduct(data: CreateProductRequest) {
     formData.append("image", data.image);
   }
 
-  const response = await api.post("/api/admin/products", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-
-  return response.data;
+  return request(
+    api.post<ApiResponse<Product>>(
+      "/api/admin/products",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    ),
+    {} as Product
+  );
 }

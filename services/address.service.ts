@@ -1,26 +1,46 @@
 import { api, ApiResponse } from "@/lib/api";
+import { request } from "@/lib/request";
 import { Address, AddressRequest } from "@/types/address";
 
 export async function getAddresses(): Promise<Address[]> {
-  const res = await api.get<ApiResponse<Address[]>>("/api/addresses");
-  return res.data.data;
+  return request(
+    api.get<ApiResponse<Address[]>>("/api/addresses"),
+    []
+  );
 }
 
-export async function createAddress(payload: AddressRequest): Promise<Address> {
-  const res = await api.post<ApiResponse<Address>>("/api/addresses", payload);
-  return res.data.data;
+export async function createAddress(
+  payload: AddressRequest
+): Promise<Address> {
+  return request(
+    api.post<ApiResponse<Address>>("/api/addresses", payload),
+    {} as Address
+  );
 }
 
-export async function updateAddress(id: number, payload: AddressRequest): Promise<Address> {
-  const res = await api.put<ApiResponse<Address>>(`/api/addresses/${id}`, payload);
-  return res.data.data;
+export async function updateAddress(
+  id: number,
+  payload: AddressRequest
+): Promise<Address> {
+  return request(
+    api.put<ApiResponse<Address>>(`/api/addresses/${id}`, payload),
+    {} as Address
+  );
 }
 
-export async function deleteAddress(id: number): Promise<void> {
-  await api.delete(`/api/addresses/${id}`);
+export async function deleteAddress(
+  id: number
+): Promise<void> {
+  try {
+    await api.delete(`/api/addresses/${id}`);
+  } catch {}
 }
 
-export async function setDefaultAddress(id: number): Promise<Address> {
-  const res = await api.put<ApiResponse<Address>>(`/api/addresses/${id}/default`);
-  return res.data.data;
+export async function setDefaultAddress(
+  id: number
+): Promise<Address> {
+  return request(
+    api.put<ApiResponse<Address>>(`/api/addresses/${id}/default`),
+    {} as Address
+  );
 }

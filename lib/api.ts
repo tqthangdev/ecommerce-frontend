@@ -1,6 +1,7 @@
 // lib/api.ts
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore, User } from "@/stores/auth.store";
+import { useServerStore } from "@/stores/server.store";
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -18,7 +19,27 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
   withCredentials: true,
+})
+
+const refreshApi = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
 });
+
+async function refreshAccessToken(): Promise<string> {
+  const res = await refreshApi.post<
+    ApiResponse<{
+      accessToken: string;
+      user: User;
+    }>
+  >("/api/auth/refresh", {});
+
+  const { accessToken, user } = res.data.data;
+
+  useAuthStore.getState().setAuth(user, accessToken);
+
+  return accessToken;
+}
 
 const AUTH_ENDPOINTS_EXCLUDED_FROM_REFRESH = [
   "/api/auth/login",
@@ -32,7 +53,12 @@ export function clearAuth() {
   if (typeof window === "undefined") return;
 
   localStorage.removeItem("auth-storage");
-  useAuthStore.getState().setAccessToken(null);
+
+  useAuthStore.setState({
+    user: null,
+    accessToken: null,
+    hasSession: false,
+  });
 }
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
@@ -49,23 +75,16 @@ let isRefreshing = false;
 
 let pendingQueue: Array<(token: string | null) => void> = [];
 
-async function refreshAccessToken(): Promise<string> {
-  const res = await axios.post<ApiResponse<{ accessToken: string; user: User }>>(
-    `${API_BASE_URL}/api/auth/refresh`,
-    {},
-    { withCredentials: true }
-  );
-
-  const { accessToken, user } = res.data.data;
-  useAuthStore.getState().setAuth(user, accessToken);
-
-  return accessToken;
-}
-
 export async function restoreAccessToken(): Promise<boolean> {
-  const token = useAuthStore.getState().accessToken;
+  const { accessToken, hasSession } = useAuthStore.getState();
 
-  if (token) return true;
+  if (accessToken) {
+    return true;
+  }
+
+  if (!hasSession) {
+    return false;
+  }
 
   try {
     await refreshAccessToken();
@@ -77,19 +96,38 @@ export async function restoreAccessToken(): Promise<boolean> {
 }
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    useServerStore.getState().setOnline();
+    return response;
+  },
 
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
 
+    if (!error.response) {
+      useServerStore.getState().setOffline();
+
+      return Promise.resolve({
+        data: {
+          success: false,
+          message: "SERVER_UNAVAILABLE",
+          data: null,
+        },
+      });
+    }
+
     const isExcludedFromRefresh = AUTH_ENDPOINTS_EXCLUDED_FROM_REFRESH.some((path) =>
       originalRequest.url?.includes(path)
     );
 
-    if (error.response?.status !== 401 || originalRequest._retry || isExcludedFromRefresh) {
-      return Promise.reject(new Error(getErrorMessage(error)));
+    if (axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
+
+    if (error.response.status !== 401 || originalRequest._retry || isExcludedFromRefresh) {
+      return Promise.reject(error);
     }
 
     originalRequest._retry = true;
@@ -123,7 +161,10 @@ api.interceptors.response.use(
       originalRequest.headers.set("Authorization", `Bearer ${accessToken}`);
 
       return api(originalRequest);
-    } catch {
+
+    } catch (err) {
+      console.error("Refresh failed:", err);
+
       pendingQueue.forEach((callback) => {
         callback(null);
       });
@@ -137,6 +178,7 @@ api.interceptors.response.use(
       }
 
       return Promise.reject(new Error("Session expired."));
+
     } finally {
       isRefreshing = false;
     }
@@ -144,6 +186,10 @@ api.interceptors.response.use(
 );
 
 export function getErrorMessage(err: unknown): string {
+  if (axios.isCancel(err)) {
+    return "";
+  }
+
   if (axios.isAxiosError(err)) {
     if (!err.response) {
       return "Unable to connect to the server.";

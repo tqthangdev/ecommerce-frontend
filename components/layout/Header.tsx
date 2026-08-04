@@ -17,7 +17,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 import { logout as logoutApi } from "@/lib/auth.service";
-import { clearAuth } from "@/lib/api";
+import { canAccessAdmin } from "@/lib/permission";
 
 export default function Header() {
   const pathname = usePathname();
@@ -30,7 +30,7 @@ export default function Header() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
-  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+  const canAdmin = canAccessAdmin(user?.roles);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -63,16 +63,14 @@ export default function Header() {
     setShowLogoutConfirm(true);
   }
 
-  function confirmLogout() {
+  async function confirmLogout() {
     setShowLogoutConfirm(false);
     try {
-      logoutApi();
-    } catch {
-      // ignore
+      await logoutApi();
+    } finally {
+      logout();
+      window.location.href = "/login";
     }
-    clearAuth();
-    logout();
-    window.location.href = "/";
   }
 
   function cancelLogout() {
@@ -146,7 +144,7 @@ export default function Header() {
                     </div>
 
                     <div className="py-1">
-                      {isAdmin && (
+                      {canAdmin  && (
                         <Link
                           href="/admin"
                           onClick={() => setMenuOpen(false)}

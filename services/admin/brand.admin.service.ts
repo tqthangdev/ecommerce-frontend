@@ -1,4 +1,5 @@
-import { api } from "@/lib/api";
+import { api, ApiResponse } from "@/lib/api";
+import { request } from "@/lib/request";
 import { Brand } from "@/types/product";
 
 interface SpringPage<T> {
@@ -10,26 +11,6 @@ interface SpringPage<T> {
   last: boolean;
 }
 
-export async function getBrands(): Promise<Brand[]> {
-  const response = await api.get<{
-    success: boolean;
-    message: string;
-    data: SpringPage<Brand>;
-  }>("/api/admin/brands", {
-    params: { page: 0, size: 100, sort: "name,asc" },
-  });
-  return response.data.data.content;
-}
-
-export async function getBrandById(id: number): Promise<Brand> {
-  const response = await api.get<{
-    success: boolean;
-    message: string;
-    data: Brand;
-  }>(`/api/admin/brands/${id}`);
-  return response.data.data;
-}
-
 export interface BrandPayload {
   name: string;
   logoUrl?: string;
@@ -37,24 +18,43 @@ export interface BrandPayload {
   active?: boolean;
 }
 
-export async function createBrand(payload: BrandPayload): Promise<Brand> {
-  const response = await api.post<{
-    success: boolean;
-    message: string;
-    data: Brand;
-  }>("/api/admin/brands", payload);
-  return response.data.data;
-}
+export const getBrands = () =>
+  request(
+    api.get<ApiResponse<SpringPage<Brand>>>("/api/admin/brands", {
+      params: { page: 0, size: 100, sort: "name,asc" },
+    }),
+    {
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      number: 0,
+      size: 100,
+      last: true,
+    }
+  ).then((page) => page?.content ?? []);
 
-export async function updateBrand(id: number, payload: BrandPayload): Promise<Brand> {
-  const response = await api.put<{
-    success: boolean;
-    message: string;
-    data: Brand;
-  }>(`/api/admin/brands/${id}`, payload);
-  return response.data.data;
-}
+export const getBrandById = (id: number) =>
+  request(
+    api.get<ApiResponse<Brand>>(`/api/admin/brands/${id}`),
+    {} as Brand
+  );
 
-export async function deleteBrand(id: number): Promise<void> {
-  await api.delete(`/api/admin/brands/${id}`);
-}
+export const createBrand = (payload: BrandPayload) =>
+  request(
+    api.post<ApiResponse<Brand>>("/api/admin/brands", payload),
+    {} as Brand
+  );
+
+export const updateBrand = (id: number, payload: BrandPayload) =>
+  request(
+    api.put<ApiResponse<Brand>>(`/api/admin/brands/${id}`, payload),
+    {} as Brand
+  );
+
+export const deleteBrand = async (id: number): Promise<void> => {
+  try {
+    await api.delete(`/api/admin/brands/${id}`);
+  } catch {
+    // Ignore when server is unavailable
+  }
+};

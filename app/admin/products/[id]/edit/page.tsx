@@ -1,4 +1,3 @@
-//C:\Quin\ecommerce\frontend\app\admin\products\[id]\edit\page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -93,8 +92,8 @@ export default function EditProductPage() {
         featured,
       });
       setProduct(updated);
-    } catch (err) {
-      console.error(err?.message);
+    } catch (err: unknown) {
+      console.error((err as Error)?.message);
     } finally {
       setSaving(false);
     }
@@ -287,6 +286,8 @@ function VariantsSection({
   variants: ProductVariant[];
   onChanged: () => void;
 }) {
+  const [editingId, setEditingId] = useState<number | null>(null);
+
   const [sku, setSku] = useState("");
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
@@ -294,12 +295,14 @@ function VariantsSection({
   const [priceUnit, setPriceUnit] = useState<PriceUnit>("million");
   const [stockQuantity, setStockQuantity] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [adding, setAdding] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ProductVariant | null>(null);
 
   const [sortKey, setSortKey] = useState<VariantSortKey>("sku");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const isEditing = editingId !== null;
 
   function handleSort(key: VariantSortKey) {
     if (key === sortKey) {
@@ -320,33 +323,70 @@ function VariantsSection({
     return sortDir === "asc" ? cmp : -cmp;
   });
 
-  async function handleAdd() {
-    setAdding(true);
+  function resetForm() {
+    setSku("");
+    setColor("");
+    setSize("");
+    setPrice("");
+    setPriceUnit("million");
+    setStockQuantity("");
+    setImageUrl("");
+    setEditingId(null);
+    setError(null);
+  }
+
+  function startEditing(v: ProductVariant) {
+    setEditingId(v.id);
+    setSku(v.sku);
+    setColor(v.color);
+    setSize(v.size);
+    const unit: PriceUnit = v.price < PRICE_UNIT_MULTIPLIER.million ? "thousand" : "million";
+    setPriceUnit(unit);
+    setPrice(String(v.price / PRICE_UNIT_MULTIPLIER[unit]));
+    setStockQuantity(String(v.stockQuantity));
+    setImageUrl(v.imageUrl ?? "");
+    setError(null);
+  }
+
+  function handleUnitChange(newUnit: PriceUnit) {
+    const currentActual = (Number(price) || 0) * PRICE_UNIT_MULTIPLIER[priceUnit];
+    setPriceUnit(newUnit);
+    setPrice(String(currentActual / PRICE_UNIT_MULTIPLIER[newUnit]));
+  }
+
+  async function handleSubmit() {
+    setSubmitting(true);
     setError(null);
     try {
       const actualPrice = (Number(price) || 0) * PRICE_UNIT_MULTIPLIER[priceUnit];
-      await addVariant(productId, {
-        sku,
-        color,
-        size,
-        price: actualPrice,
-        stockQuantity: Number(stockQuantity),
-        imageUrl,
-      });
-      setSku("");
-      setColor("");
-      setSize("");
-      setPrice("");
-      setPriceUnit("million");
-      setStockQuantity("");
-      setImageUrl("");
+      if (editingId !== null) {
+        await updateVariant(editingId, {
+          sku,
+          color,
+          size,
+          price: actualPrice,
+          stockQuantity: Number(stockQuantity),
+          imageUrl,
+        });
+      } else {
+        await addVariant(productId, {
+          sku,
+          color,
+          size,
+          price: actualPrice,
+          stockQuantity: Number(stockQuantity),
+          imageUrl,
+        });
+      }
+      resetForm();
       onChanged();
     } catch (err: unknown) {
-      debugger;
-      const message = err?.message || "Failed to add variant";
+      const message =
+        (err as Error)?.message ||
+        (editingId !== null ? "Failed to update variant" : "Failed to add variant");
       setError(message);
     } finally {
-      setAdding(false);
+      setSubmitting(false);
     }
   }
 
@@ -355,7 +395,15 @@ function VariantsSection({
       <section className="space-y-4 rounded-xl border p-6">
         <h2 className="text-xl font-semibold">Variants</h2>
 
-        <table className="w-full text-left text-sm">
+        <table className="w-full table-fixed text-left text-sm">
+          <colgroup>
+            <col />
+            <col className="w-20" />
+            <col className="w-16" />
+            <col className="w-20" />
+            <col className="w-14" />
+            <col className="w-24" />
+          </colgroup>
           <thead>
             <tr className="border-b">
               <SortableHeader label="SKU" sortKey="sku" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
@@ -371,21 +419,32 @@ function VariantsSection({
               <VariantRow
                 key={v.id}
                 variant={v}
+                isEditing={editingId === v.id}
+                onEdit={() => startEditing(v)}
                 onDelete={() => setDeleteTarget(v)}
-                onUpdated={onChanged}
               />
             ))}
           </tbody>
         </table>
 
         <div className="space-y-3 border-t pt-4">
+          {isEditing && (
+            <p className="text-sm font-medium text-gray-600">
+              Editing variant <span className="font-semibold">{sku}</span> —{" "}
+              <button onClick={resetForm} className="text-blue-600 underline">
+                Cancel
+              </button>
+            </p>
+          )}
+
           <div className="flex gap-3">
             <div className="w-52">
               <label className="mb-1 block text-xs font-medium text-gray-500">SKU</label>
               <input
-                className="w-full rounded-lg border p-2"
+                className="w-full rounded-lg border p-2 disabled:bg-gray-100"
                 placeholder="SKU"
                 value={sku}
+                disabled={isEditing}
                 onChange={(e) => setSku(e.target.value)}
               />
             </div>
@@ -437,19 +496,19 @@ function VariantsSection({
                 <select
                   className="shrink-0 rounded-lg border p-2 text-sm"
                   value={priceUnit}
-                  onChange={(e) => setPriceUnit(e.target.value as PriceUnit)}
+                  onChange={(e) => handleUnitChange(e.target.value as PriceUnit)}
                 >
                   <option value="million">million</option>
                   <option value="thousand">thousand</option>
                 </select>
               </div>
             </div>
-            <button 
-              onClick={handleAdd}
-              disabled={adding}
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
               className="rounded-lg bg-black px-5 py-2 text-white disabled:opacity-50"
             >
-              + Add
+              {submitting ? "Saving..." : isEditing ? "Update" : "+ Add"}
             </button>
           </div>
         </div>
@@ -462,7 +521,10 @@ function VariantsSection({
         description={`Remove variant "${deleteTarget?.sku}"?`}
         confirmText="Delete"
         onConfirm={async () => {
-          if (deleteTarget) await removeVariant(deleteTarget.id);
+          if (deleteTarget) {
+            await removeVariant(deleteTarget.id);
+            if (editingId === deleteTarget.id) resetForm();
+          }
           setDeleteTarget(null);
           onChanged();
         }}
@@ -474,106 +536,26 @@ function VariantsSection({
 
 function VariantRow({
   variant,
+  isEditing,
+  onEdit,
   onDelete,
-  onUpdated,
 }: {
   variant: ProductVariant;
+  isEditing: boolean;
+  onEdit: () => void;
   onDelete: () => void;
-  onUpdated: () => void;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [unit, setUnit] = useState<PriceUnit>("million");
-  const [priceInput, setPriceInput] = useState(
-    String(variant.price / PRICE_UNIT_MULTIPLIER.million)
-  );
-  const [stockQuantity, setStockQuantity] = useState(String(variant.stockQuantity));
-  const [saving, setSaving] = useState(false);
-
-  function startEditing() {
-    setUnit("million");
-    setPriceInput(String(variant.price / PRICE_UNIT_MULTIPLIER.million));
-    setStockQuantity(String(variant.stockQuantity));
-    setEditing(true);
-  }
-
-  function handleUnitChange(newUnit: PriceUnit) {
-    const currentActual = (Number(priceInput) || 0) * PRICE_UNIT_MULTIPLIER[unit];
-    setUnit(newUnit);
-    setPriceInput(String(currentActual / PRICE_UNIT_MULTIPLIER[newUnit]));
-  }
-
-  async function handleSave() {
-    setSaving(true);
-    try {
-      const actualPrice = (Number(priceInput) || 0) * PRICE_UNIT_MULTIPLIER[unit];
-      await updateVariant(variant.id, {
-        sku: variant.sku,
-        color: variant.color,
-        size: variant.size,
-        price: actualPrice,
-        stockQuantity: Number(stockQuantity),
-        imageUrl: variant.imageUrl,
-      });
-      setEditing(false);
-      onUpdated();
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
-    <tr className="border-b">
-      <td className="w-32 py-2">{variant.sku}</td>
-      <td>{variant.color}</td>
-      <td>{variant.size}</td>
-      <td>
-        {editing ? (
-          <div className="flex items-center gap-1">
-            <input
-              type="text"
-              inputMode="decimal"
-              className="w-14 rounded border p-1"
-              value={priceInput}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === "" || /^\d*\.?\d*$/.test(val)) setPriceInput(val);
-              }}
-            />
-            <select
-              className="rounded border p-1 text-xs"
-              value={unit}
-              onChange={(e) => handleUnitChange(e.target.value as PriceUnit)}
-            >
-              <option value="million">million</option>
-              <option value="thousand">thousand</option>
-            </select>
-          </div>
-        ) : (
-          formatVND(variant.price)
-        )}
-      </td>
-      <td>
-        {editing ? (
-          <input
-            type="number"
-            className="w-14 rounded border p-1"
-            value={stockQuantity}
-            onChange={(e) => setStockQuantity(e.target.value)}
-          />
-        ) : (
-          variant.stockQuantity
-        )}
-      </td>
-      <td className="space-x-2 text-right">
-        {editing ? (
-          <button onClick={handleSave} disabled={saving} className="text-green-600 disabled:opacity-50">
-            {saving ? "Saving..." : "Save"}
-          </button>
-        ) : (
-          <button onClick={startEditing} className="text-blue-600">
-            Edit
-          </button>
-        )}
+    <tr className={`border-b align-top ${isEditing ? "bg-yellow-50" : ""}`}>
+      <td className="whitespace-normal break-words py-2">{variant.sku}</td>
+      <td className="whitespace-normal break-words">{variant.color}</td>
+      <td className="whitespace-normal break-words">{variant.size}</td>
+      <td className="whitespace-normal break-words">{formatVND(variant.price)}</td>
+      <td className="whitespace-normal break-words">{variant.stockQuantity}</td>
+      <td className="space-x-2 text-right whitespace-nowrap">
+        <button onClick={onEdit} className="text-blue-600">
+          Edit
+        </button>
         <button onClick={onDelete} className="text-red-600">
           Delete
         </button>

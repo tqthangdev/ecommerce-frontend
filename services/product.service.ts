@@ -1,4 +1,5 @@
-import { api } from "@/lib/api";
+import { api, ApiResponse } from "@/lib/api";
+import { request } from "@/lib/request";
 import { Product } from "@/types/product";
 
 export type ProductQuery = {
@@ -11,34 +12,36 @@ export type ProductQuery = {
   sort?: string;
 };
 
-export async function getProducts(params?: ProductQuery): Promise<{
+export interface ProductPage {
   content: Product[];
   page: number;
   size: number;
   totalElements: number;
   totalPages: number;
-}> {
-  const response = await api.get<{
-    success: boolean;
-    message: string;
-    data: {
-      content: Product[];
-      page: number;
-      size: number;
-      totalElements: number;
-      totalPages: number;
-    };
-  }>("/api/products/search", { params });
-
-  return response.data.data;
 }
 
-export async function getProductBySlug(slug: string): Promise<Product> {
-  const response = await api.get<{
-    success: boolean;
-    message: string;
-    data: Product;
-  }>(`/api/products/${slug}`);
+export async function getProducts(
+  params?: ProductQuery
+): Promise<ProductPage> {
+  return request(
+    api.get<ApiResponse<ProductPage>>("/api/products/search", {
+      params,
+    }),
+    {
+      content: [],
+      page: params?.page ?? 0,
+      size: params?.size ?? 12,
+      totalElements: 0,
+      totalPages: 0,
+    }
+  );
+}
 
-  return response.data.data;
+export async function getProductBySlug(
+  slug: string
+): Promise<Product> {
+  return request(
+    api.get<ApiResponse<Product>>(`/api/products/${slug}`),
+    {} as Product
+  );
 }

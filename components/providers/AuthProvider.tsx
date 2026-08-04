@@ -10,11 +10,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const syncCart = useCartStore((state) => state.syncFromServer);
 
   const initialized = useRef(false);
+  const setInitialized = useAuthStore((state) => state.setInitialized);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    restoreAccessToken().finally(() => setHydrated(true));
-  }, []);
+    restoreAccessToken().finally(() => {
+      setHydrated(true);
+      setInitialized(true);
+    });
+  }, [setInitialized]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -25,6 +29,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       syncCart();
     }
   }, [hydrated, accessToken]);
+
+  if (!hydrated) {
+    return null;
+  }
 
   return <>{children}</>;
 }

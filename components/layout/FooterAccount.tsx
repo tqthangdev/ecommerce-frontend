@@ -6,8 +6,7 @@ import Link from "next/link";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 import { useAuthStore } from "@/stores/auth.store";
-
-import { clearAuth } from "@/lib/api";
+import { canAccessAdmin } from "@/lib/permission";
 import { logout as logoutApi } from "@/lib/auth.service";
 
 export default function FooterAccount() {
@@ -16,7 +15,7 @@ export default function FooterAccount() {
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+  const canAdmin = canAccessAdmin(user?.roles);
 
   function handleLogout() {
     setShowLogoutConfirm(true);
@@ -27,14 +26,10 @@ export default function FooterAccount() {
 
     try {
       await logoutApi();
-    } catch {
-      // Ignore logout API error
+    } finally {
+      logout();
+      window.location.href = "/login";
     }
-
-    clearAuth();
-    logout();
-
-    window.location.href = "/";
   }
 
   function cancelLogout() {
@@ -67,7 +62,7 @@ export default function FooterAccount() {
                 </Link>
               </li>
 
-              {isAdmin && (
+              {canAdmin && (
                 <li>
                   <Link href="/admin" className="transition hover:text-white">
                     Admin Dashboard

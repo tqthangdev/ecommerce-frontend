@@ -1,4 +1,5 @@
-import { api } from "@/lib/api";
+import { api, ApiResponse } from "@/lib/api";
+import { request } from "@/lib/request";
 import { Category } from "@/types/product";
 
 interface SpringPage<T> {
@@ -15,51 +16,46 @@ export interface CategoryPayload {
   imageUrl?: string;
   description?: string;
   active?: boolean;
-}
-
-export async function getCategories(): Promise<Category[]> {
-  const response = await api.get<{
-    success: boolean;
-    message: string;
-    data: SpringPage<Category>;
-  }>("/api/admin/categories", {
-    params: { page: 0, size: 100, sort: "name,asc" },
-  });
-  return response.data.data.content;
-}
-
-export async function getCategoryById(id: number): Promise<Category> {
-  const response = await api.get<{
-    success: boolean;
-    message: string;
-    data: Category;
-  }>(`/api/admin/categories/${id}`);
-  return response.data.data;
-}
-
-export interface CategoryPayload {
-  name: string;
   slug?: string;
 }
 
-export async function createCategory(payload: CategoryPayload): Promise<Category> {
-  const response = await api.post<{
-    success: boolean;
-    message: string;
-    data: Category;
-  }>("/api/admin/categories", payload);
-  return response.data.data;
-}
+export const getCategories = () =>
+  request(
+    api.get<ApiResponse<SpringPage<Category>>>("/api/admin/categories", {
+      params: { page: 0, size: 100, sort: "name,asc" },
+    }),
+    {
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      number: 0,
+      size: 100,
+      last: true,
+    }
+  ).then((page) => page.content);
 
-export async function updateCategory(id: number, payload: CategoryPayload): Promise<Category> {
-  const response = await api.put<{
-    success: boolean;
-    message: string;
-    data: Category;
-  }>(`/api/admin/categories/${id}`, payload);
-  return response.data.data;
-}
+export const getCategoryById = (id: number) =>
+  request(
+    api.get<ApiResponse<Category>>(`/api/admin/categories/${id}`),
+    {} as Category
+  );
 
-export async function deleteCategory(id: number): Promise<void> {
-  await api.delete(`/api/admin/categories/${id}`);
-}
+export const createCategory = (payload: CategoryPayload) =>
+  request(
+    api.post<ApiResponse<Category>>("/api/admin/categories", payload),
+    {} as Category
+  );
+
+export const updateCategory = (id: number, payload: CategoryPayload) =>
+  request(
+    api.put<ApiResponse<Category>>(`/api/admin/categories/${id}`, payload),
+    {} as Category
+  );
+
+export const deleteCategory = async (id: number): Promise<void> => {
+  try {
+    await api.delete(`/api/admin/categories/${id}`);
+  } catch {
+    // Ignore when server is unavailable
+  }
+};

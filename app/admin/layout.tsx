@@ -5,21 +5,26 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth.store";
 import Sidebar from "@/components/admin/Sidebar";
 import Topbar from "@/components/admin/Topbar";
+import { canAccessAdmin } from "@/lib/permission";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
-  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+  const canAdmin = canAccessAdmin(user?.roles);
+
+  const initialized = useAuthStore((state) => state.initialized);
 
   useEffect(() => {
+    if (!initialized) return;
+
     if (user === null) {
       router.replace("/login");
-    } else if (!isAdmin) {
+    } else if (!canAdmin) {
       router.replace("/");
     }
-  }, [user, isAdmin, router]);
+  }, [initialized, user, canAdmin, router]);
 
-  if (!user || !isAdmin) {
+  if (!user || !canAdmin) {
     return null;
   }
 

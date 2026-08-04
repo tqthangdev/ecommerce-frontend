@@ -48,7 +48,6 @@ export default function AdminOrdersPage() {
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-  const abortRef = useRef<AbortController>();
 
   // Debounce keyword search + skip if < 2 chars
   useEffect(() => {
@@ -61,22 +60,33 @@ export default function AdminOrdersPage() {
   }, [keyword]);
 
   useEffect(() => {
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
+    const controller = new AbortController();
+
     setLoading(true);
+    setError("");
+
     getAdminOrders(
       page,
       10,
       statusFilter || undefined,
       debouncedKeyword || undefined,
-      abortRef.current?.signal
+      controller.signal
     )
       .then(setData)
       .catch((err) => {
-        if (err.name !== "CanceledError") setError(getErrorMessage(err));
+        if (err.code === "ERR_CANCELED") {
+          return;
+        }
+
+        setError(getErrorMessage(err));
       })
-      .finally(() => setLoading(false));
-    return () => abortRef.current?.abort();
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
   }, [page, statusFilter, debouncedKeyword]);
 
   async function handleStatusChange(orderId: number, newStatus: string) {
@@ -131,7 +141,7 @@ export default function AdminOrdersPage() {
 
       {loading ? (
         <Loading />
-      ) : !data || data.empty ? (
+      ) : !data || data.totalElements === 0 ? (
         <p className="py-10 text-center text-gray-500">No orders found.</p>
       ) : (
         <>

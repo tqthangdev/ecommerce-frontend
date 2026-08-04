@@ -1,4 +1,3 @@
-//C:\Quin\ecommerce\frontend\app\admin\products\create\page.tsx
 "use client";
 
 import { useEffect, useState } from "react";

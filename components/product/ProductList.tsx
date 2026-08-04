@@ -43,11 +43,11 @@ export default function ProductList({
       size: 12,
     })
       .then((data) => {
+        console.log("PRODUCT DATA:", data)
         setProducts(data.content);
         setTotalPages(data.totalPages);
       })
       .catch((err) => {
-        debugger;
         let messeage = err?.message ?? "Failed to load products. Please try again.";
         setError(messeage);
       })
