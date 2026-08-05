@@ -8,6 +8,7 @@ export interface AdminUser {
   enabled: boolean;
   roles: string[];
   createdAt: string;
+  updatedAt: string;
 }
 
 interface SpringPage<T> {

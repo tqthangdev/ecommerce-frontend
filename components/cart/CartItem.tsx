@@ -11,11 +11,14 @@ type Props = {
 };
 
 function getThumbnail(item: CartItemType): string {
-  const product = item.product;
-  if (item.variant?.imageUrl) return item.variant.imageUrl;
-  const primary = product.images?.find((img) => img.primary);
-  if (primary?.imageUrl) return primary.imageUrl;
-  if (product.images?.[0]?.imageUrl) return product.images[0].imageUrl;
+  if (item.variant?.imageUrl) {
+    return item.variant.imageUrl;
+  }
+
+  if (item.product.imageUrl) {
+    return item.product.imageUrl;
+  }
+
   return "/images/placeholder.jpg";
 }
 

@@ -12,6 +12,7 @@ interface CartState {
   increase: (productId: number, variantId?: number) => Promise<void>;
   decrease: (productId: number, variantId?: number) => Promise<void>;
   clear: () => Promise<void>;
+  reset: () => void;
   syncFromServer: () => Promise<void>;
 }
 
@@ -33,30 +34,8 @@ export const useCartStore = create<CartState>()(
             product: {
               id: i.productId,
               name: i.productName,
-              slug: "",
-              basePrice: i.unitPrice,
               effectivePrice: i.effectivePrice,
-              discountPercent: 0,
-              stockQuantity: 0,
-              active: true,
-              featured: false,
-              viewCount: 0,
-              category: { id: 0, name: "", slug: "" },
-              brand: { id: 0, name: "", slug: "", active: true },
-              images: i.productImageUrl
-                ? [
-                    {
-                      id: 0,
-                      imageUrl: i.productImageUrl,
-                      altText: "",
-                      displayOrder: 0,
-                      primary: true,
-                    },
-                  ]
-                : [],
-              variants: [],
-              createdAt: "",
-              updatedAt: "",
+              imageUrl: i.productImageUrl,
             },
             variant: i.variantId
               ? {
@@ -66,7 +45,7 @@ export const useCartStore = create<CartState>()(
                   size: String(i.variantSize || ""),
                   price: i.effectivePrice,
                   stockQuantity: 0,
-                  imageUrl: i.productImageUrl,
+                  imageUrl: i.productImageUrl ?? "",
                   productId: i.productId,
                 }
               : undefined,

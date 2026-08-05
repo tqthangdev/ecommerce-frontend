@@ -6,9 +6,21 @@ import { useCartStore } from "@/stores/cart.store";
 import { checkout } from "@/services/order.service";
 import { getAddresses, createAddress } from "@/services/address.service";
 import { getErrorMessage } from "@/lib/api";
-import { Address, CheckoutRequest, PaymentMethod } from "@/types/order";
-import { AddressRequest } from "@/types/address";
-import { getThumbnail } from "@/components/product/ProductCard";
+import { CheckoutRequest, PaymentMethod } from "@/types/order";
+import { Address, AddressRequest } from "@/types/address";
+import { CartItem } from "@/types/cart";
+
+function getCartThumbnail(item: CartItem) {
+  if (item.variant?.imageUrl) {
+    return item.variant.imageUrl;
+  }
+
+  if (item.product.imageUrl) {
+    return item.product.imageUrl;
+  }
+
+  return "/images/placeholder.jpg";
+}
 
 export default function CheckoutForm() {
   const router = useRouter();
@@ -135,7 +147,7 @@ export default function CheckoutForm() {
         {items.map((item) => (
           <div key={`${item.product.id}-${item.variant?.id}`} className="flex gap-4">
             <img
-              src={getThumbnail(item.product)}
+              src={getCartThumbnail(item)}
               alt={item.product.name}
               className="h-16 w-16 rounded object-cover"
             />

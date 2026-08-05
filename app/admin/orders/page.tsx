@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { getAdminOrders, updateOrderStatus } from "@/services/admin/order.admin.service";
-import { Order } from "@/types/order";
+import { Order, OrderStatus } from "@/types/order";
 import { PageResponse } from "@/types/api";
 import { getErrorMessage } from "@/lib/api";
 import Loading from "@/components/ui/Loading";
@@ -47,16 +47,23 @@ export default function AdminOrdersPage() {
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState<number | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounce keyword search + skip if < 2 chars
   useEffect(() => {
-    clearTimeout(debounceRef.current);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
     debounceRef.current = setTimeout(() => {
       setDebouncedKeyword(keyword.length >= 2 ? keyword : "");
       setPage(0);
-    }, 500);
-    return () => clearTimeout(debounceRef.current);
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
   }, [keyword]);
 
   useEffect(() => {
@@ -91,8 +98,8 @@ export default function AdminOrdersPage() {
 
   async function handleStatusChange(
     orderId: number,
-    previousStatus: string,
-    newStatus: string
+    previousStatus: OrderStatus,
+    newStatus: OrderStatus
   ) {
     setUpdatingId(orderId);
     setError("");
@@ -103,26 +110,34 @@ export default function AdminOrdersPage() {
         newStatus
       );
 
-      setData((prev) => ({
-        ...(prev ?? {}),
-        content: (prev?.content ?? []).map((o) =>
-          o.id === orderId ? updated : o
-        ),
-      }));
+      setData((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          content: prev.content.map((o) =>
+            o.id === orderId ? updated : o
+          ),
+        };
+      });
     } catch (err) {
       setError(getErrorMessage(err));
 
-      setData((prev) => ({
-        ...(prev ?? {}),
-        content: (prev?.content ?? []).map((o) =>
-          o.id === orderId
-            ? {
-                ...o,
-                status: previousStatus,
-              }
-            : o
-        ),
-      }));
+      setData((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          content: prev.content.map((o) =>
+            o.id === orderId
+              ? {
+                  ...o,
+                  status: previousStatus,
+                }
+              : o
+          ),
+        };
+      });
     } finally {
       setUpdatingId(null);
     }
@@ -216,7 +231,7 @@ export default function AdminOrdersPage() {
                         handleStatusChange(
                           order.id,
                           order.status,
-                          e.target.value
+                          e.target.value as OrderStatus
                         )
                       }
                       className={`rounded border px-2 py-1 text-xs font-medium ${STATUS_COLORS[order.status]}`}

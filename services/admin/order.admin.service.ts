@@ -21,10 +21,10 @@ export function getAdminOrders(
       totalPages: 0,
       size,
       number: page,
+      page: 0,
       first: true,
       last: true,
       empty: true,
-      numberOfElements: 0,
     } as PageResponse<Order>
   );
 }

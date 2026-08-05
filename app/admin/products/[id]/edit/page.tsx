@@ -86,7 +86,9 @@ export default function EditProductPage() {
       const updated = await updateProduct(productId, {
         name,
         description,
+        basePrice: 0,
         discountPercent: Number(discountPercent),
+        stockQuantity: 0,
         categoryId: Number(categoryId),
         brandId: Number(brandId),
         active,
@@ -650,15 +652,16 @@ function ImagesSection({
             />
             URL
           </label>
-          <label className="flex items-center gap-1.5">
+          <label className="flex items-center gap-1.5 opacity-60 cursor-not-allowed">
             <input
+              disabled
               type="radio"
               name="image-mode"
               value="upload"
               checked={mode === "upload"}
               onChange={() => setMode("upload")}
             />
-            Upload
+            Upload (Comming Soon)
           </label>
         </div>
 

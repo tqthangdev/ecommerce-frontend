@@ -38,10 +38,10 @@ export const getProducts = (
       totalPages: 0,
       number: page,
       size,
+      page: 0,
       first: true,
       last: true,
       empty: true,
-      numberOfElements: 0,
     } as PageResponse<Product>
   );
 

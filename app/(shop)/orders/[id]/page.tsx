@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { useParams } from "next/navigation";
 import { getOrderById, cancelOrder as cancelOrderApi } from "@/services/order.service";
 import { getErrorMessage } from "@/lib/api";
 import { Order } from "@/types/order";
@@ -39,7 +38,6 @@ function formatDate(dateStr: string) {
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const id = Number(params.id);
 
   const [order, setOrder] = useState<Order | null>(null);
@@ -50,6 +48,7 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     if (!id) return;
+
     getOrderById(id)
       .then(setOrder)
       .catch(() => setError("Failed to load order."))
@@ -59,6 +58,7 @@ export default function OrderDetailPage() {
   async function handleCancel() {
     setCancelling(true);
     setError("");
+
     try {
       const updated = await cancelOrderApi(id);
       setOrder(updated);
@@ -71,7 +71,12 @@ export default function OrderDetailPage() {
   }
 
   if (loading) return <Loading />;
-  if (error && !order) return <div className="py-20 text-center text-red-500">{error}</div>;
+
+  if (error && !order) {
+    return <div className="py-20 text-center text-red-500">{error}</div>;
+  }
+
+  if (!order) return null;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
@@ -80,11 +85,12 @@ export default function OrderDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Order #{order?.orderNumber}</h1>
-          <p className="text-sm text-gray-500">{order && formatDate(order.createdAt)}</p>
+          <h1 className="text-2xl font-bold">Order #{order.orderNumber}</h1>
+          <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
         </div>
+
         <div className="flex items-center gap-3">
-          {order?.cancellable && (
+          {order.cancellable && (
             <button
               onClick={() => setShowCancelDialog(true)}
               className="rounded border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -92,28 +98,33 @@ export default function OrderDetailPage() {
               Cancel Order
             </button>
           )}
+
           <div className="flex flex-col items-end gap-1">
             <span
-              className={`rounded-full px-3 py-1 text-sm font-medium ${order ? STATUS_COLORS[order.status] : ""}`}
+              className={`rounded-full px-3 py-1 text-sm font-medium ${STATUS_COLORS[order.status]}`}
             >
-              {order?.status}
+              {order.status}
             </span>
+
             <span
-              className={`rounded-full px-2 py-0.5 text-xs ${order ? PAYMENT_STATUS_COLORS[order.paymentStatus] : ""}`}
+              className={`rounded-full px-2 py-0.5 text-xs ${PAYMENT_STATUS_COLORS[order.paymentStatus]}`}
             >
-              Payment: {order?.paymentStatus}
+              Payment: {order.paymentStatus}
             </span>
           </div>
         </div>
       </div>
 
       {error && (
-        <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-500">{error}</p>
+        <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-500">
+          {error}
+        </p>
       )}
 
       {/* Items */}
       <div className="space-y-4 rounded-xl border p-6">
         <h2 className="text-lg font-bold">Items</h2>
+
         {order.items.map((item) => (
           <div key={item.id} className="flex gap-4">
             {item.productImageUrl && (
@@ -123,16 +134,22 @@ export default function OrderDetailPage() {
                 className="h-16 w-16 rounded object-cover"
               />
             )}
+
             <div className="flex-1">
               <p className="font-medium">{item.productName}</p>
+
               {item.variantColor && (
                 <p className="text-xs text-gray-500">
                   {item.variantColor} / {item.variantSize}
                 </p>
               )}
+
               <p className="text-xs text-gray-500">x{item.quantity}</p>
             </div>
-            <p className="font-semibold">{item.subtotal.toLocaleString("vi-VN")} đ</p>
+
+            <p className="font-semibold">
+              {item.subtotal.toLocaleString("vi-VN")} đ
+            </p>
           </div>
         ))}
       </div>
@@ -140,22 +157,32 @@ export default function OrderDetailPage() {
       {/* Summary */}
       <div className="space-y-2 rounded-xl border p-6">
         <h2 className="mb-3 text-lg font-bold">Order Summary</h2>
+
         <div className="flex justify-between text-sm">
           <span>Subtotal</span>
           <span>{order.subtotal.toLocaleString("vi-VN")} đ</span>
         </div>
+
         <div className="flex justify-between text-sm">
           <span>Shipping</span>
           <span>
-            {order.shippingFee === 0 ? "FREE" : `${order.shippingFee.toLocaleString("vi-VN")} đ`}
+            {order.shippingFee === 0
+              ? "FREE"
+              : `${order.shippingFee.toLocaleString("vi-VN")} đ`}
           </span>
         </div>
+
         {order.discountAmount > 0 && (
           <div className="flex justify-between text-sm text-green-600">
-            <span>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</span>
-            <span>-{order.discountAmount.toLocaleString("vi-VN")} đ</span>
+            <span>
+              Discount{order.couponCode ? ` (${order.couponCode})` : ""}
+            </span>
+            <span>
+              -{order.discountAmount.toLocaleString("vi-VN")} đ
+            </span>
           </div>
         )}
+
         <div className="flex justify-between border-t pt-2 text-lg font-bold">
           <span>Total</span>
           <span>{order.totalAmount.toLocaleString("vi-VN")} đ</span>
@@ -165,19 +192,25 @@ export default function OrderDetailPage() {
       {/* Shipping Address */}
       <div className="rounded-xl border p-6">
         <h2 className="mb-3 text-lg font-bold">Shipping Address</h2>
+
         <p className="font-medium">
           {order.shippingAddress.recipientName} · {order.shippingAddress.phone}
         </p>
-        <p className="text-sm text-gray-500">{order.shippingAddress.fullAddress}</p>
+
+        <p className="text-sm text-gray-500">
+          {order.shippingAddress.fullAddress}
+        </p>
       </div>
 
       {/* Payment */}
       <div className="rounded-xl border p-6">
         <h2 className="mb-3 text-lg font-bold">Payment</h2>
+
         <div className="flex justify-between text-sm">
           <span>Method</span>
           <span className="font-medium">{order.paymentMethod}</span>
         </div>
+
         {order.paymentReference && (
           <div className="mt-1 flex justify-between text-sm">
             <span>Reference</span>

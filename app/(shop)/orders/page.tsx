@@ -42,7 +42,7 @@ export default function OrdersPage() {
 
   if (loading) return <Loading />;
 
-  if (!data || data.empty || (data?.content ?? []).length == 0) {
+  if (!data || (data?.content ?? []).length == 0) {
     return <EmptyOrder />;
   }
   return (

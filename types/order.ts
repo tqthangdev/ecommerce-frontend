@@ -1,17 +1,22 @@
-export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPING" | "DELIVERED" | "CANCELLED" | "REFUNDED";
+export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPING" | "DELIVERED" | "CANCELLED" | "RETURNED";
 
 export type PaymentMethod = "COD" | "VNPAY" | "MOMO" | "STRIPE";
-export type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED";
+export type PaymentStatus = "PENDING" | "UNPAID" | "PAID" | "FAILED" | "RETURNED";
 
 export interface OrderAddress {
   id: number;
-  fullName: string;
+  recipientName: string;
   phone: string;
-  street: string;
-  ward: string;
-  district: string;
-  city: string;
-  isDefault: boolean;
+  provinceCode: string;
+  provinceName: string;
+  districtCode: string;
+  districtName: string;
+  wardCode: string;
+  wardName: string;
+  streetAddress: string;
+  fullAddress: string;
+  defaultAddress: boolean;
+  label: string;
 }
 
 export interface OrderItem {

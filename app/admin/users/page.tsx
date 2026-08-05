@@ -16,7 +16,7 @@ function SortableHeader({
 }: {
   label: string;
   sortKey: UserSortKey;
-  activeKey: UserSortKey;
+  activeKey: UserSortKey | null;
   dir: "asc" | "desc";
   onSort: (key: UserSortKey) => void;
 }) {
@@ -45,7 +45,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [sortKey, setSortKey] = useState<UserSortKey>("");
+  const [sortKey, setSortKey] = useState<UserSortKey | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
