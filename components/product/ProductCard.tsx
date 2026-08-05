@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Eye } from "lucide-react";
 import { Product } from "@/types/product";
+import AddToCartButton from "./AddToCartButton";
 
 interface Props {
   product: Product;
@@ -20,8 +22,8 @@ export default function ProductCard({ product }: Props) {
   const hasDiscount = product.discountPercent > 0;
 
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-lg border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <div className="relative flex h-64 items-center justify-center overflow-hidden bg-gray-100">
+    <div className="group/card flex h-full flex-col overflow-hidden rounded-lg border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+      <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-gray-100 p-4">
         {hasDiscount && (
           <span className="absolute left-3 top-3 z-10 rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
             -{product.discountPercent}%
@@ -31,7 +33,7 @@ export default function ProductCard({ product }: Props) {
         <img
           src={thumbnail}
           alt={product.name}
-          className="gryph h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          className="h-full w-full object-contain transition duration-300 group-hover:scale-105"
         />
       </div>
 
@@ -40,36 +42,60 @@ export default function ProductCard({ product }: Props) {
           {product.category?.name}
         </p>
 
-        <h2 className="line-clamp-1 text-base font-bold leading-7 text-gray-900"  title={product.name}>
+        <h2
+          className="line-clamp-1 text-base font-bold leading-7 text-gray-900"
+          title={product.name}
+        >
           {product.name}
         </h2>
 
-        <div className="mt-auto flex items-end justify-between pt-1">
-          <div className="flex flex-col">
-            {hasDiscount && (
-              <span className="text-sm text-gray-400 line-through">
-                {product.basePrice.toLocaleString("vi-VN")} đ
-              </span>
-            )}
-
-            <span className="text-xl font-bold text-red-600">
-              {product.effectivePrice.toLocaleString("vi-VN")} đ
+        <div className="mt-3">
+          {hasDiscount && (
+            <span className="text-sm text-gray-400 line-through">
+              {product.basePrice.toLocaleString("vi-VN")} đ
             </span>
-          </div>
+          )}
 
-          
+          <span className="block text-xl font-bold text-red-600">
+            {product.effectivePrice.toLocaleString("vi-VN")} đ
+          </span>
         </div>
-        
-        <div
-          className={`mt-auto flex items-end justify-between ${
-            hasDiscount ? "pt-5" : "pt-2"
-          }`}
-        >
+
+        <div className="mt-auto flex gap-2 pt-5">
+          <AddToCartButton product={product} compact />
+
           <Link
             href={`/products/${product.slug}`}
-            className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800"
+            title="View product"
+            className="
+              group/view relative flex h-10 w-10 items-center justify-center
+              overflow-hidden rounded-full
+              border border-black text-white bg-black
+              transition-all duration-300 ease-out
+              hover:w-24
+            "
           >
-            View
+            <Eye
+              size={18}
+              className="
+                absolute left-1/2 -translate-x-1/2
+                shrink-0 transition-all duration-300
+                group-hover/view:left-4
+                group-hover/view:translate-x-0
+              "
+            />
+
+            <span
+              className="
+                ml-5 max-w-0 overflow-hidden whitespace-nowrap
+                text-sm opacity-0
+                transition-all duration-300 ease-out
+                group-hover/view:max-w-xs
+                group-hover/view:opacity-100
+              "
+            >
+              View
+            </span>
           </Link>
         </div>
       </div>
