@@ -14,6 +14,6 @@ body {
   color: var(--foreground);
 }
 
-button {
+button:not(.cursor-not-allowed) {
   cursor: pointer;
 }

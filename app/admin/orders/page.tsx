@@ -8,16 +8,16 @@ import { getErrorMessage } from "@/lib/api";
 import Loading from "@/components/ui/Loading";
 import Link from "next/link";
 
-const ALL_STATUSES = [
-  "PENDING",
-  "CONFIRMED",
-  "PROCESSING",
-  "SHIPPING",
-  "DELIVERED",
-  "CANCELLED",
-  "REFUNDED",
-];
-
+const STATUS_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["PROCESSING", "CANCELLED"],
+  PROCESSING: ["SHIPPING"],
+  SHIPPING: ["DELIVERED"],
+  DELIVERED: [],
+  CANCELLED: [],
+  RETURNED: [],
+};
+const ALL_STATUSES = Object.keys(STATUS_TRANSITIONS);
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
   CONFIRMED: "bg-blue-100 text-blue-800",
@@ -25,7 +25,7 @@ const STATUS_COLORS: Record<string, string> = {
   SHIPPING: "bg-indigo-100 text-indigo-800",
   DELIVERED: "bg-green-100 text-green-800",
   CANCELLED: "bg-gray-200 text-gray-500",
-  REFUNDED: "bg-red-100 text-red-800",
+  RETURNED: "bg-red-100 text-red-800",
 };
 
 function formatDate(dateStr: string) {
@@ -89,16 +89,40 @@ export default function AdminOrdersPage() {
     return () => controller.abort();
   }, [page, statusFilter, debouncedKeyword]);
 
-  async function handleStatusChange(orderId: number, newStatus: string) {
+  async function handleStatusChange(
+    orderId: number,
+    previousStatus: string,
+    newStatus: string
+  ) {
     setUpdatingId(orderId);
+    setError("");
+
     try {
-      const updated = await updateOrderStatus(orderId, newStatus);
+      const updated = await updateOrderStatus(
+        orderId,
+        newStatus
+      );
+
       setData((prev) => ({
         ...(prev ?? {}),
-        content: (prev?.content ?? []).map((o) => (o.id === orderId ? updated : o)),
+        content: (prev?.content ?? []).map((o) =>
+          o.id === orderId ? updated : o
+        ),
       }));
     } catch (err) {
       setError(getErrorMessage(err));
+
+      setData((prev) => ({
+        ...(prev ?? {}),
+        content: (prev?.content ?? []).map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                status: previousStatus,
+              }
+            : o
+        ),
+      }));
     } finally {
       setUpdatingId(null);
     }
@@ -188,12 +212,24 @@ export default function AdminOrdersPage() {
                     <select
                       value={order.status}
                       disabled={updatingId === order.id}
-                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      onChange={(e) =>
+                        handleStatusChange(
+                          order.id,
+                          order.status,
+                          e.target.value
+                        )
+                      }
                       className={`rounded border px-2 py-1 text-xs font-medium ${STATUS_COLORS[order.status]}`}
                     >
-                      {ALL_STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
+                      {[
+                        order.status,
+                        ...(STATUS_TRANSITIONS[order.status] ?? []),
+                      ].map((status) => (
+                        <option
+                          key={status}
+                          value={status}
+                        >
+                          {status}
                         </option>
                       ))}
                     </select>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getBrandById, updateBrand } from "@/services/admin/brand.admin.service";
 import Loading from "@/components/ui/Loading";
+import BackButton from "@/components/ui/BackButton";
 
 export default function EditBrandPage() {
   const { id } = useParams<{ id: string }>();
@@ -50,12 +51,7 @@ export default function EditBrandPage() {
     <main className="mx-auto max-w-2xl space-y-6 p-10">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Edit Brand</h1>
-        <button
-          onClick={() => router.push("/admin/brands")}
-          className="rounded-lg border px-4 py-2"
-        >
-          Back to list
-        </button>
+        <BackButton label="Back to list" path="/admin/brands" />
       </div>
       <section className="space-y-5 rounded-xl border bg-white p-6">
         <div>

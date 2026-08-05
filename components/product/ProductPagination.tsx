@@ -31,9 +31,11 @@ export default function ProductPagination({ currentPage, totalPages }: Props) {
         <button
           key={page}
           onClick={() => changePage(page)}
-          className={`rounded border px-4 py-2 ${
-            currentPage === page ? "bg-black text-white" : ""
-          } `}
+          className={`rounded border px-4 py-2 transition border-black ${
+            currentPage === page
+              ? "bg-black text-white"
+              : "text-black hover:border-black hover:bg-black hover:text-white"
+          }`}
         >
           {page}
         </button>

@@ -8,6 +8,7 @@ import { getErrorMessage } from "@/lib/api";
 import { Order } from "@/types/order";
 import Loading from "@/components/ui/Loading";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import BackButton from "@/components/ui/BackButton";
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -74,9 +75,7 @@ export default function OrderDetailPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
-      <Link href="/orders" className="text-sm text-gray-500 hover:text-black">
-        ← Back to orders
-      </Link>
+      <BackButton className="mb-3" label="Back to Orders" path="/orders" />
 
       {/* Header */}
       <div className="flex items-center justify-between">

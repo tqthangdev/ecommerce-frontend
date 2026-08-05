@@ -7,6 +7,7 @@ import { getCategories } from "@/services/admin/category.admin.service";
 import { getBrands } from "@/services/admin/brand.admin.service";
 import { Category, Brand } from "@/types/product";
 import Loading from "@/components/ui/Loading";
+import BackButton from "@/components/ui/BackButton";
 
 export default function CreateProductPage() {
   const router = useRouter();
@@ -92,12 +93,7 @@ export default function CreateProductPage() {
           <h1 className="text-3xl font-bold">Create Product</h1>
           <p className="mt-1 text-sm text-gray-500">Add a new product to the catalog.</p>
         </div>
-        <button
-          onClick={() => router.push("/admin/products")}
-          className="rounded-lg border px-4 py-2"
-        >
-          Back to list
-        </button>
+        <BackButton label="Back to list" path="/admin/products" />
       </div>
 
       <section className="space-y-5 rounded-xl border bg-white p-6">

@@ -19,6 +19,7 @@ import { getBrands } from "@/services/admin/brand.admin.service";
 import { Product, ProductVariant, ProductImage, Category, Brand } from "@/types/product";
 import Loading from "@/components/ui/Loading";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import BackButton from "@/components/ui/BackButton";
 
 const PRICE_UNIT_MULTIPLIER = {
   million: 1_000_000,
@@ -113,12 +114,7 @@ export default function EditProductPage() {
     <div className="mx-auto max-w-2xl space-y-6 p-10">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Edit Product</h1>
-        <button
-          onClick={() => router.push("/admin/products")}
-          className="rounded-lg border px-4 py-2"
-        >
-          Back to list
-        </button>
+        <BackButton label="Back to list" path="/admin/products" />
       </div>
 
       <section className="space-y-4 rounded-xl border p-6">
@@ -400,7 +396,7 @@ function VariantsSection({
             <col />
             <col className="w-20" />
             <col className="w-16" />
-            <col className="w-20" />
+            <col className="w-22" />
             <col className="w-14" />
             <col className="w-24" />
           </colgroup>
@@ -427,7 +423,7 @@ function VariantsSection({
           </tbody>
         </table>
 
-        <div className="space-y-3 border-t pt-4">
+        <div className="space-y-3">
           {isEditing && (
             <p className="text-sm font-medium text-gray-600">
               Editing variant <span className="font-semibold">{sku}</span> —{" "}
@@ -548,11 +544,11 @@ function VariantRow({
   return (
     <tr className={`border-b align-top ${isEditing ? "bg-yellow-50" : ""}`}>
       <td className="whitespace-normal break-words py-2">{variant.sku}</td>
-      <td className="whitespace-normal break-words">{variant.color}</td>
-      <td className="whitespace-normal break-words">{variant.size}</td>
-      <td className="whitespace-normal break-words">{formatVND(variant.price)}</td>
-      <td className="whitespace-normal break-words">{variant.stockQuantity}</td>
-      <td className="space-x-2 text-right whitespace-nowrap">
+      <td className="whitespace-normal break-words py-2">{variant.color}</td>
+      <td className="whitespace-normal break-words py-2">{variant.size}</td>
+      <td className="whitespace-normal break-words py-2">{formatVND(variant.price)}</td>
+      <td className="whitespace-normal break-words py-2">{variant.stockQuantity}</td>
+      <td className="space-x-2 text-right whitespace-nowrap py-2">
         <button onClick={onEdit} className="text-blue-600">
           Edit
         </button>
