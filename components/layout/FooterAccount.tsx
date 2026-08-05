@@ -44,11 +44,11 @@ export default function FooterAccount() {
         <ul className="space-y-3 text-sm">
           {user ? (
             <>
-              <li>
+              {/*<li>
                 <Link href="/profile" className="transition hover:text-white">
                   My Profile
                 </Link>
-              </li>
+              </li>*/}
 
               <li>
                 <Link href="/orders" className="transition hover:text-white">
