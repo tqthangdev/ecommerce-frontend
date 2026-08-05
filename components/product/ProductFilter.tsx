@@ -94,6 +94,8 @@ function FilterContent() {
           className="mt-4 text-sm text-red-500 hover:text-red-700"
           onClick={() => {
             const params = new URLSearchParams();
+            setMinPrice("");
+            setMaxPrice("");
             params.set("page", "1");
             router.push(`/products?${params.toString()}`);
           }}
