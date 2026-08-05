@@ -43,7 +43,6 @@ export default function ProductList({
       size: 12,
     })
       .then((data) => {
-        console.log("PRODUCT DATA:", data)
         setProducts(data.content);
         setTotalPages(data.totalPages);
       })
@@ -67,7 +66,14 @@ export default function ProductList({
   }
 
   if (products.length === 0) {
-    return <Loading />;
+    return (
+    <div className="flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-dashed">
+      <h2 className="text-xl font-semibold">Không tìm thấy sản phẩm</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.
+      </p>
+    </div>
+    );
   }
 
   return (
