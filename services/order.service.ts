@@ -10,8 +10,7 @@ export async function checkout(
     api.post<ApiResponse<CheckoutResponse>>(
       "/api/orders/checkout",
       payload
-    ),
-    {} as CheckoutResponse
+    )
   );
 }
 

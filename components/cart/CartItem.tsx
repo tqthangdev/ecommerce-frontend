@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import { useCartStore } from "@/stores/cart.store";
 import { CartItem as CartItemType } from "@/types/cart";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 type Props = {
   item: CartItemType;
@@ -18,6 +20,7 @@ function getThumbnail(item: CartItemType): string {
 }
 
 export default function CartItem({ item }: Props) {
+  const [showConfirm, setShowConfirm] = useState(false);
   const increase = useCartStore((state) => state.increase);
   const decrease = useCartStore((state) => state.decrease);
   const removeItem = useCartStore((state) => state.removeItem);
@@ -26,7 +29,13 @@ export default function CartItem({ item }: Props) {
   const price = item.variant?.price ?? product.effectivePrice;
   const thumbnail = getThumbnail(item);
 
+  function handleRemove() {
+    removeItem(product.id, item.variant?.id);
+    setShowConfirm(false);
+  }
+
   return (
+    <>
     <div className="flex items-center gap-5 rounded-xl border p-5">
       <img
         src={thumbnail}
@@ -68,12 +77,22 @@ export default function CartItem({ item }: Props) {
       <div>
         <p className="mb-4 font-semibold">{(price * item.quantity).toLocaleString("vi-VN")} đ</p>
         <button
-          onClick={() => removeItem(product.id, item.variant?.id)}
+          onClick={() => setShowConfirm(true)}
           className="text-sm text-red-500 hover:text-red-700"
         >
           Remove
         </button>
       </div>
     </div>
+    <ConfirmDialog
+      open={showConfirm}
+      title="Remove product"
+      description={`Remove "${product.name}" from cart?`}
+      confirmText="Yes"
+      cancelText="No"
+      onConfirm={handleRemove}
+      onCancel={() => setShowConfirm(false)}
+    />
+    </>
   );
 }

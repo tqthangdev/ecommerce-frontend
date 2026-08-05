@@ -38,6 +38,7 @@ export default function CheckoutForm() {
   const [couponCode, setCouponCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [addressError, setAddressError] = useState(false);
 
   useEffect(() => {
     getAddresses()
@@ -52,14 +53,26 @@ export default function CheckoutForm() {
     }
   }, [addresses]);
 
+  function scrollTop() {
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }, 0);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
     if (items.length === 0) {
       setError("Your cart is empty.");
+      scrollTop();
       return;
     }
 
     setError("");
+    setAddressError(false);
     setLoading(true);
 
     try {
@@ -72,7 +85,8 @@ export default function CheckoutForm() {
 
       if (!addressId) {
         setError("Please select or add a shipping address.");
-        setLoading(false);
+        setAddressError(true);
+        scrollTop();
         return;
       }
 
@@ -84,7 +98,6 @@ export default function CheckoutForm() {
       };
 
       const result = await checkout(payload);
-      console.log("Checkout result:", result);
 
       if (result.paymentUrl) {
         window.location.href = result.paymentUrl;
@@ -93,9 +106,12 @@ export default function CheckoutForm() {
 
       clear();
       router.push(`/checkout/success?order=${result.orderNumber}`);
+
     } catch (err) {
-      console.error("Checkout error:", err);
+      console.log("Checkout error:", err);
       setError(getErrorMessage(err));
+      scrollTop();
+
     } finally {
       setLoading(false);
     }
@@ -108,7 +124,7 @@ export default function CheckoutForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Error */}
       {error && (
-        <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+        <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600 outline-none">
           {error}
         </p>
       )}
@@ -143,7 +159,13 @@ export default function CheckoutForm() {
       </div>
 
       {/* Addresses */}
-      <div className="space-y-4 rounded-xl border p-6">
+      <div
+        className={`space-y-4 rounded-xl border p-6 outline-none ${
+          addressError
+            ? "border-red-500 bg-red-50"
+            : "border-black"
+        }`}
+      >
         <h2 className="text-xl font-bold">Shipping Address</h2>
 
         {!showNewAddress && addresses.length > 0 && (
@@ -161,7 +183,10 @@ export default function CheckoutForm() {
                   type="radio"
                   name="address"
                   checked={selectedAddressId === addr.id}
-                  onChange={() => setSelectedAddressId(addr.id)}
+                  onChange={() => {
+                    setSelectedAddressId(addr.id);
+                    setAddressError(false);
+                  }}
                 />
                 <div className="flex-1">
                   <p className="font-medium">
@@ -249,14 +274,27 @@ export default function CheckoutForm() {
 
       {/* Coupon */}
       <div className="space-y-3 rounded-xl border p-6">
-        <h2 className="text-xl font-bold">Coupon</h2>
-        <div className="flex gap-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Coupon</h2>
+          <span className="text-xs text-gray-500">
+            Coming soon
+          </span>
+        </div>
+
+        <div className="flex gap-2 opacity-50">
           <input
             placeholder="Coupon code"
             value={couponCode}
+            disabled
             onChange={(e) => setCouponCode(e.target.value)}
-            className="flex-1 rounded border p-3"
+            className="flex-1 rounded border p-3 bg-gray-100 cursor-not-allowed"
           />
+          <button
+            disabled
+            className="rounded bg-gray-300 px-4 text-white cursor-not-allowed"
+          >
+            Apply
+          </button>
         </div>
       </div>
 
@@ -264,23 +302,38 @@ export default function CheckoutForm() {
       <div className="space-y-3 rounded-xl border p-6">
         <h2 className="text-xl font-bold">Payment Method</h2>
         <div className="space-y-2">
-          {(["COD", "VNPAY", "MOMO"] as PaymentMethod[]).map((method) => (
-            <label
-              key={method}
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition ${
-                paymentMethod === method ? "border-black bg-gray-50" : "border-gray-200"
-              }`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                value={method}
-                checked={paymentMethod === method}
-                onChange={() => setPaymentMethod(method)}
-              />
-              <span className="font-medium">{method}</span>
-            </label>
-          ))}
+          {(["COD", "VNPAY", "MOMO"] as PaymentMethod[]).map((method) => {
+            const disabled = method !== "COD";
+
+            return (
+              <label
+                key={method}
+                className={`flex items-center gap-3 rounded-lg border p-4 transition ${
+                  paymentMethod === method
+                    ? "border-black bg-gray-50"
+                    : "border-gray-200"
+                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  value={method}
+                  disabled={disabled}
+                  checked={paymentMethod === method}
+                  onChange={() => setPaymentMethod(method)}
+                />
+
+                <span className="font-medium">
+                  {method}
+                  {disabled && (
+                    <span className="ml-2 text-xs text-gray-500">
+                      (Coming soon)
+                    </span>
+                  )}
+                </span>
+              </label>
+            );
+          })}
         </div>
       </div>
 
