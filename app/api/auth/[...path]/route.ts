@@ -9,11 +9,18 @@ export async function POST(
   try {
     const pathArray = (await params).path;
     const pathStr = pathArray.join("/");
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
 
+    // 1. Forward incoming cookies from client to Spring Boot
+    const clientCookie = request.headers.get("cookie") || "";
+
+    // 2. Proxy request to Spring Boot Backend
     const springRes = await fetch(`${API_BASE_URL}/api/auth/${pathStr}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cookie": clientCookie,
+      },
       body: JSON.stringify(body),
     });
 
@@ -23,24 +30,26 @@ export async function POST(
       return NextResponse.json(data, { status: springRes.status });
     }
 
-    // 2. Tạo Response trả về cho Frontend
+    // 3. Prepare response object for Next.js client
     const response = NextResponse.json(data);
 
-    // 3. Lấy refreshToken từ response và Set Cookie chuẩn lên Domain Vercel
-    const refreshToken = data?.data?.refreshToken || data?.refreshToken;
+    // 4. Extract and forward all Set-Cookie headers from Spring Boot response
+    const setCookieHeaders = springRes.headers.getSetCookie 
+      ? springRes.headers.getSetCookie() 
+      : [springRes.headers.get("set-cookie")].filter(Boolean) as string[];
 
-    if (refreshToken) {
-      response.cookies.set("refresh_token", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60, // 7 ngày
+    if (setCookieHeaders.length > 0) {
+      setCookieHeaders.forEach((cookieString) => {
+        response.headers.append("Set-Cookie", cookieString);
       });
+      console.log(`[PROXY /api/auth/${pathStr}] Successfully forwarded ${setCookieHeaders.length} cookies from Spring Boot.`);
+    } else {
+      console.log(`[PROXY /api/auth/${pathStr}] No Set-Cookie header received from Spring Boot.`);
     }
 
     return response;
   } catch (error) {
+    console.error("Proxy Error:", error);
     return NextResponse.json(
       { success: false, message: "Proxy Connection Error" },
       { status: 500 }
