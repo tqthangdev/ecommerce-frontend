@@ -22,7 +22,7 @@ export const api = axios.create({
 })
 
 const refreshApi = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "",
   withCredentials: true,
 });
 

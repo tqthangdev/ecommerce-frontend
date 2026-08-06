@@ -1,4 +1,5 @@
 // lib/auth.service.ts
+import axios from "axios";
 import { api, ApiResponse } from "@/lib/api";
 
 export interface LoginResponse {
@@ -14,7 +15,7 @@ export interface LoginResponse {
 }
 
 export async function login(email: string, password: string) {
-  const res = await api.post<ApiResponse<LoginResponse>>("/api/auth/login", {
+  const res = await axios.post<ApiResponse<LoginResponse>>("/api/auth/login", {
     email,
     password,
   });
@@ -22,7 +23,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function register(name: string, email: string, password: string) {
-  const res = await api.post<ApiResponse<LoginResponse>>("/api/auth/register", {
+  const res = await axios.post<ApiResponse<LoginResponse>>("/api/auth/register", {
     fullName: name,
     email,
     password,
@@ -31,5 +32,5 @@ export async function register(name: string, email: string, password: string) {
 }
 
 export async function logout() {
-  await api.post("/api/auth/logout");
+  await api.axios("/api/auth/logout");
 }
