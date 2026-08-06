@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Users } from "lucide-react";
+import { LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Users, Percent } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/brands", label: "Brands", icon: Tag },
+  { href: "/admin/promotions", label: "Promotions", icon: Percent },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/users", label: "Users", icon: Users },
 ];
@@ -20,7 +21,7 @@ export default function Sidebar() {
     <aside className="hidden w-64 shrink-0 border-r bg-white md:block">
       <div className="flex h-20 items-center border-b px-6">
         <Link href="/admin" className="text-2xl font-black tracking-tight">
-          E-Shop <span className="text-gray-400">Admin</span>
+          Shopora <span className="text-gray-400">Admin</span>
         </Link>
       </div>
 
