@@ -32,5 +32,5 @@ export async function register(name: string, email: string, password: string) {
 }
 
 export async function logout() {
-  await api.axios("/api/auth/logout");
+  await axios.post("/api/auth/logout");
 }
