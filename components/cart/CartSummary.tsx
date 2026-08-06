@@ -8,8 +8,7 @@ export default function CartSummary() {
   const items = useCartStore((state) => state.items);
 
   const total = items.reduce(
-    (sum, item) => sum + (item.variant?.price ?? item.product.effectivePrice) * item.quantity,
-
+    (sum, item) => sum + item.variant.price * item.quantity,
     0
   );
 

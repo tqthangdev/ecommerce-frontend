@@ -19,17 +19,14 @@ export function getThumbnail(product: Product): string {
 
 export default function ProductCard({ product }: Props) {
   const thumbnail = getThumbnail(product);
-  const hasDiscount = product.discountPercent > 0;
+  const activeVariants = (product.variants ?? []).filter((v) => v.active);
+  const minPrice = product.minPrice ?? activeVariants[0]?.price;
+  const salePrice = product.salePrice;
+  const hasSale = salePrice !== undefined && salePrice !== null && salePrice < (minPrice ?? 0);
 
   return (
     <div className="group/card flex h-full flex-col overflow-hidden rounded-lg border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-gray-100 p-4">
-        {hasDiscount && (
-          <span className="absolute left-3 top-3 z-10 rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
-            -{product.discountPercent}%
-          </span>
-        )}
-
         <img
           src={thumbnail}
           alt={product.name}
@@ -50,15 +47,20 @@ export default function ProductCard({ product }: Props) {
         </h2>
 
         <div className="mt-3">
-          {hasDiscount && (
-            <span className="text-sm text-gray-400 line-through">
-              {product.basePrice.toLocaleString("vi-VN")} đ
+          {hasSale ? (
+            <>
+              <span className="mr-2 text-sm text-gray-400 line-through">
+                {(minPrice ?? 0).toLocaleString("vi-VN")} đ
+              </span>
+              <span className="block text-xl font-bold text-red-600">
+                {salePrice.toLocaleString("vi-VN")} đ
+              </span>
+            </>
+          ) : (
+            <span className="block text-xl font-bold text-red-600">
+              {(minPrice ?? 0).toLocaleString("vi-VN")} đ
             </span>
           )}
-
-          <span className="block text-xl font-bold text-red-600">
-            {product.effectivePrice.toLocaleString("vi-VN")} đ
-          </span>
         </div>
 
         <div className="mt-auto flex gap-2 pt-5">

@@ -8,16 +8,16 @@ interface CartState {
   totalQuantity: number;
   totalAmount: number;
   addItem: (item: CartItem) => Promise<void>;
-  removeItem: (productId: number, variantId?: number) => Promise<void>;
-  increase: (productId: number, variantId?: number) => Promise<void>;
-  decrease: (productId: number, variantId?: number) => Promise<void>;
+  removeItem: (variantId: number) => Promise<void>;
+  increase: (variantId: number) => Promise<void>;
+  decrease: (variantId: number) => Promise<void>;
   clear: () => Promise<void>;
   reset: () => void;
   syncFromServer: () => Promise<void>;
 }
 
 function itemKey(item: CartItem) {
-  return item.variant?.id ? `${item.product.id}-${item.variant.id}` : `${item.product.id}`;
+  return String(item.variant.id);
 }
 
 export const useCartStore = create<CartState>()(
@@ -34,21 +34,18 @@ export const useCartStore = create<CartState>()(
             product: {
               id: i.productId,
               name: i.productName,
-              effectivePrice: i.effectivePrice,
-              imageUrl: i.productImageUrl,
+              imageUrl: i.imageUrl || undefined,
             },
-            variant: i.variantId
-              ? {
-                  id: i.variantId,
-                  sku: i.variantSku || "",
-                  color: i.variantColor || "",
-                  size: String(i.variantSize || ""),
-                  price: i.effectivePrice,
-                  stockQuantity: 0,
-                  imageUrl: i.productImageUrl ?? "",
-                  productId: i.productId,
-                }
-              : undefined,
+            variant: {
+              id: i.variantId,
+              sku: i.variantSku || "",
+              color: i.color || "",
+              size: i.size || "",
+              price: i.effectivePrice,
+              stockQuantity: i.stockAvailable,
+              imageUrl: i.imageUrl || "",
+              active: true,
+            },
             quantity: i.quantity,
           }));
           const totalQuantity = cart.totalQuantity;
@@ -75,7 +72,7 @@ export const useCartStore = create<CartState>()(
         }
 
         try {
-          await cartApi.addToCart(item.product.id, quantity, item.variant?.id);
+          await cartApi.addToCart(item.variant.id, quantity);
           const cart = await cartApi.getCart();
           set({
             totalQuantity: cart.totalQuantity,
@@ -95,18 +92,16 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      removeItem: async (productId, variantId) => {
+      removeItem: async (variantId) => {
         const state = get();
-        const key = variantId ? `${productId}-${variantId}` : String(productId);
-        const removed = state.items.find(
-          (i) => (variantId ? `${i.product.id}-${i.variant?.id}` : String(i.product.id)) === key
-        );
+        const key = String(variantId);
+        const removed = state.items.find((i) => itemKey(i) === key);
         if (!removed) return;
 
         set({ items: state.items.filter((i) => itemKey(i) !== key) });
 
         try {
-          await cartApi.removeCartItem(productId, variantId);
+          await cartApi.removeCartItem(variantId);
           const cart = await cartApi.getCart();
           set({ totalQuantity: cart.totalQuantity, totalAmount: cart.total });
         } catch {
@@ -114,12 +109,10 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      increase: async (productId, variantId) => {
+      increase: async (variantId) => {
         const state = get();
-        const key = variantId ? `${productId}-${variantId}` : String(productId);
-        const item = state.items.find(
-          (i) => (variantId ? `${i.product.id}-${i.variant?.id}` : String(i.product.id)) === key
-        );
+        const key = String(variantId);
+        const item = state.items.find((i) => itemKey(i) === key);
         if (!item) return;
 
         const newQty = item.quantity + 1;
@@ -128,7 +121,7 @@ export const useCartStore = create<CartState>()(
         });
 
         try {
-          await cartApi.updateCartItem(productId, newQty, variantId);
+          await cartApi.updateCartItem(variantId, newQty);
           const cart = await cartApi.getCart();
           set({ totalQuantity: cart.totalQuantity, totalAmount: cart.total });
         } catch {
@@ -140,12 +133,10 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      decrease: async (productId, variantId) => {
+      decrease: async (variantId) => {
         const state = get();
-        const key = variantId ? `${productId}-${variantId}` : String(productId);
-        const item = state.items.find(
-          (i) => (variantId ? `${i.product.id}-${i.variant?.id}` : String(i.product.id)) === key
-        );
+        const key = String(variantId);
+        const item = state.items.find((i) => itemKey(i) === key);
         if (!item || item.quantity <= 1) return;
 
         const newQty = item.quantity - 1;
@@ -154,7 +145,7 @@ export const useCartStore = create<CartState>()(
         });
 
         try {
-          await cartApi.updateCartItem(productId, newQty, variantId);
+          await cartApi.updateCartItem(variantId, newQty);
           const cart = await cartApi.getCart();
           set({ totalQuantity: cart.totalQuantity, totalAmount: cart.total });
         } catch {

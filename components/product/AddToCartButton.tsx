@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores/cart.store";
+import { useAuthStore } from "@/stores/auth.store";
 import { Product, ProductVariant } from "@/types/product";
 import ProductVariantModal from "./ProductVariantModal";
 import { ShoppingCart } from "lucide-react";
@@ -17,20 +19,31 @@ export default function AddToCartButton({
   selectedVariant,
   compact
 }: Props) {
+  const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
+  const user = useAuthStore((state) => state.user);
 
   const [quantity, setQuantity] = useState(1);
   const [openVariantModal, setOpenVariantModal] = useState(false);
 
-  const hasVariants =
-    product.variants && product.variants.length > 0;
+  const activeVariants =
+    product.variants && product.variants.length > 0
+      ? product.variants.filter((v) => v.active)
+      : [];
 
-  const currentVariant = selectedVariant;
+  const hasVariants = activeVariants.length > 0;
 
-  const stock =
-    currentVariant?.stockQuantity ?? product.stockQuantity;
+  const currentVariant =
+    selectedVariant ??
+    (activeVariants.length === 1 ? activeVariants[0] : undefined);
 
-  const outOfStock = stock <= 0;
+  // Out of stock only applies when we already have a concrete variant to judge.
+  // When the product has multiple variants and none is selected yet, we must open
+  // the variant modal instead of disabling the button.
+  const stock = currentVariant?.stockQuantity ?? 0;
+
+  const outOfStock =
+    currentVariant !== undefined && stock <= 0;
 
   function decrease() {
     setQuantity((prev) => Math.max(1, prev - 1));
@@ -45,25 +58,36 @@ export default function AddToCartButton({
   async function addToCart(variant?: ProductVariant) {
     const itemVariant = variant ?? currentVariant;
 
-    const itemStock =
-      itemVariant?.stockQuantity ?? product.stockQuantity;
+    const itemStock = itemVariant?.stockQuantity ?? 0;
 
     if (itemStock <= 0) return;
 
+    if (!user) {
+      router.push("/login?from=/products/" + product.slug);
+      return;
+    }
+
+    const primaryImage =
+      product.images?.find((img) => img.primary)?.imageUrl ??
+      product.images?.[0]?.imageUrl;
+
     await addItem({
-      product,
-      variant: itemVariant,
+      product: {
+        ...product,
+        imageUrl: itemVariant?.imageUrl || primaryImage,
+      },
+      variant: itemVariant!,
       quantity,
     });
   }
 
   function handleClick() {
-    if (outOfStock) return;
-
     if (hasVariants && !currentVariant) {
       setOpenVariantModal(true);
       return;
     }
+
+    if (outOfStock) return;
 
     addToCart();
   }
@@ -109,7 +133,7 @@ export default function AddToCartButton({
   return (
     <>
       <div className="space-y-4">
-        {!hasVariants && (
+        {!compact && (!currentVariant || activeVariants.length <= 1) && (
           <div className="flex items-center gap-4">
             <button
               onClick={decrease}

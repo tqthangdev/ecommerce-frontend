@@ -1,9 +1,8 @@
 import { api, ApiResponse } from "@/lib/api";
 import { request } from "@/lib/request";
 
-export interface CartItem {
-  productId: number;
-  variantId?: number;
+export interface CartItemRequest {
+  variantId: number;
   quantity: number;
 }
 
@@ -19,15 +18,18 @@ export interface CartResponse {
 export interface CartItemResponse {
   productId: number;
   productName: string;
-  productImageUrl?: string;
-  variantId?: number;
+  imageUrl?: string;
+  variantId: number;
   variantSku?: string;
-  variantColor?: string;
-  variantSize?: number;
+  variantName?: string;
+  color?: string;
+  size?: string;
   quantity: number;
   unitPrice: number;
   effectivePrice: number;
   subtotal: number;
+  stockAvailable: number;
+  addedAt: number;
 }
 
 const EMPTY_CART: CartResponse = {
@@ -47,13 +49,11 @@ export async function getCart(): Promise<CartResponse> {
 }
 
 export async function addToCart(
-  productId: number,
-  quantity: number,
-  variantId?: number
+  variantId: number,
+  quantity: number
 ): Promise<CartResponse> {
   return request(
     api.post<ApiResponse<CartResponse>>("/api/cart", {
-      productId,
       variantId,
       quantity,
     }),
@@ -62,20 +62,17 @@ export async function addToCart(
 }
 
 export async function updateCartItem(
-  productId: number,
-  quantity: number,
-  variantId?: number
+  variantId: number,
+  quantity: number
 ): Promise<CartResponse> {
   return request(
     api.put<ApiResponse<CartResponse>>(
       "/api/cart/items",
       {
-        productId,
-        variantId,
         quantity,
       },
       {
-        params: { productId, variantId },
+        params: { variantId },
       }
     ),
     EMPTY_CART
@@ -83,12 +80,11 @@ export async function updateCartItem(
 }
 
 export async function removeCartItem(
-  productId: number,
-  variantId?: number
+  variantId: number
 ): Promise<CartResponse> {
   return request(
     api.delete<ApiResponse<CartResponse>>("/api/cart/items", {
-      params: { productId, variantId },
+      params: { variantId },
     }),
     EMPTY_CART
   );

@@ -11,7 +11,7 @@ import { Address, AddressRequest } from "@/types/address";
 import { CartItem } from "@/types/cart";
 
 function getCartThumbnail(item: CartItem) {
-  if (item.variant?.imageUrl) {
+  if (item.variant.imageUrl) {
     return item.variant.imageUrl;
   }
 
@@ -26,7 +26,7 @@ export default function CheckoutForm() {
   const router = useRouter();
   const { items, clear } = useCartStore();
   const subtotal = items.reduce((sum, item) => {
-    const price = item.variant?.price ?? item.product.effectivePrice;
+    const price = item.variant.price;
     return sum + price * item.quantity;
   }, 0);
 
@@ -145,7 +145,7 @@ export default function CheckoutForm() {
       <div className="space-y-4 rounded-xl border p-6">
         <h2 className="text-xl font-bold">Order Items</h2>
         {items.map((item) => (
-          <div key={`${item.product.id}-${item.variant?.id}`} className="flex gap-4">
+          <div key={`${item.product.id}-${item.variant.id}`} className="flex gap-4">
             <img
               src={getCartThumbnail(item)}
               alt={item.product.name}
@@ -153,17 +153,14 @@ export default function CheckoutForm() {
             />
             <div className="flex-1">
               <p className="text-sm font-medium">{item.product.name}</p>
-              {item.variant && (
-                <p className="text-xs text-gray-500">
-                  {item.variant.color} / {item.variant.size}
-                </p>
-              )}
+              <p className="text-xs text-gray-500">
+                {item.variant.color}
+                {item.variant.size ? ` / ${item.variant.size}` : ""}
+              </p>
               <p className="text-xs text-gray-500">x{item.quantity}</p>
             </div>
             <p className="text-sm font-semibold">
-              {(
-                (item.variant?.price ?? item.product.effectivePrice) * item.quantity
-              ).toLocaleString("vi-VN")}{" "}
+              {(item.variant.price * item.quantity).toLocaleString("vi-VN")}{" "}
               đ
             </p>
           </div>

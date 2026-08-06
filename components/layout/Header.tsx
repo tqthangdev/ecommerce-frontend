@@ -93,7 +93,7 @@ export default function Header() {
               isHome ? "text-white" : "text-black"
             }`}
           >
-            E-Shop
+            Shopora
           </Link>
 
           <nav className="flex items-center gap-8">

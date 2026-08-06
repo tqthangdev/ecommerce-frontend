@@ -6,13 +6,11 @@ import { PageResponse } from "@/types/api";
 export interface ProductPayload {
   name: string;
   description: string;
-  basePrice: number;
-  discountPercent: number;
-  stockQuantity: number;
   categoryId: number;
   brandId: number;
   active: boolean;
   featured: boolean;
+  variants: VariantPayload[];
 }
 
 export interface VariantPayload {
@@ -22,6 +20,7 @@ export interface VariantPayload {
   price: number;
   stockQuantity: number;
   imageUrl?: string;
+  active?: boolean;
 }
 
 export const getProducts = (

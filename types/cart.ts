@@ -3,12 +3,11 @@ import { ProductVariant } from "./product";
 export interface CartProduct {
   id: number;
   name: string;
-  effectivePrice: number;
   imageUrl?: string;
 }
 
 export interface CartItem {
   product: CartProduct;
-  variant?: ProductVariant;
+  variant: ProductVariant;
   quantity: number;
 }

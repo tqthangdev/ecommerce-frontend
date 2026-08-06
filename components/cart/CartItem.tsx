@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { useCartStore } from "@/stores/cart.store";
 import { CartItem as CartItemType } from "@/types/cart";
@@ -11,7 +10,7 @@ type Props = {
 };
 
 function getThumbnail(item: CartItemType): string {
-  if (item.variant?.imageUrl) {
+  if (item.variant.imageUrl) {
     return item.variant.imageUrl;
   }
 
@@ -29,29 +28,29 @@ export default function CartItem({ item }: Props) {
   const removeItem = useCartStore((state) => state.removeItem);
 
   const product = item.product;
-  const price = item.variant?.price ?? product.effectivePrice;
+  const price = item.variant.price;
   const thumbnail = getThumbnail(item);
 
   function handleRemove() {
-    removeItem(product.id, item.variant?.id);
+    removeItem(item.variant.id);
     setShowConfirm(false);
   }
 
   return (
     <>
     <div className="flex items-center gap-5 rounded-xl border p-5">
-      <img
+      <div className="w-[100px] h-[100px] flex justify-center"><img
         src={thumbnail}
         alt={product.name}
-        width={100}
-        height={100}
-        className="rounded-lg object-cover"
-      />
+        // width={100}
+        // height={100}
+        className="max-w-[100px] max-h-[100px] rounded-lg object-cover"
+      /></div>
 
       <div className="flex-1">
         <h3 className="font-semibold">{product.name}</h3>
 
-        {item.variant && (
+        {item.variant.color && (
           <p className="mt-1 text-sm text-gray-500">
             {item.variant.color}
             {item.variant.size ? ` / ${item.variant.size}` : ""}
@@ -62,14 +61,14 @@ export default function CartItem({ item }: Props) {
 
         <div className="mt-4 flex items-center gap-3">
           <button
-            onClick={() => decrease(product.id, item.variant?.id)}
+            onClick={() => decrease(item.variant.id)}
             className="h-8 w-8 rounded border"
           >
             -
           </button>
           <span>{item.quantity}</span>
           <button
-            onClick={() => increase(product.id, item.variant?.id)}
+            onClick={() => increase(item.variant.id)}
             className="h-8 w-8 rounded border"
           >
             +

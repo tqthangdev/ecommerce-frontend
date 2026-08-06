@@ -8,7 +8,7 @@ export default function Footer() {
         {/* Brand */}
         <div className="lg:col-span-2">
           <Link href="/" className="text-2xl font-bold tracking-tight text-white">
-            Ecommerce
+            Shopora
           </Link>
 
           <p className="mt-4 max-w-sm text-sm leading-6 text-gray-400">
@@ -70,7 +70,7 @@ export default function Footer() {
             <div>
               <p className="font-medium text-white">Need help?</p>
 
-              <p className="text-gray-400">support@ecommerce.com · 0123 456 789</p>
+              <p className="text-gray-400">support@shopora.com · 0123 456 789</p>
             </div>
 
             <p className="text-gray-400">Ho Chi Minh City, Vietnam</p>

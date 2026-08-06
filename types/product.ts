@@ -25,6 +25,7 @@ export interface ProductVariant {
   price: number;
   stockQuantity: number;
   imageUrl: string;
+  active: boolean;
 }
 
 export interface Product {
@@ -32,10 +33,9 @@ export interface Product {
   name: string;
   slug: string;
   description: string;
-  basePrice: number;
-  effectivePrice: number;
-  discountPercent: number;
-  stockQuantity: number;
+  minPrice?: number;
+  maxPrice?: number;
+  salePrice?: number;
   active: boolean;
   featured: boolean;
   viewCount: number;

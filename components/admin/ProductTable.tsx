@@ -63,41 +63,55 @@ export default function ProductTable({ products, onDeleted }: Props) {
           </thead>
 
           <tbody>
-            {products.map((product) => (
-              <tr key={product.id} className="border-t">
-                <td className="p-4">{product.name}</td>
+            {products.map((product) => {
+              const activeVariants = (product.variants ?? []).filter((v) => v.active);
+              const totalStock = activeVariants.reduce(
+                (sum, v) => sum + v.stockQuantity,
+                0
+              );
+              const minPrice = product.minPrice ?? activeVariants[0]?.price;
+              const maxPrice = product.maxPrice ?? activeVariants[0]?.price;
 
-                <td className="p-4">{product.basePrice.toLocaleString("vi-VN")} ₫</td>
+              return (
+                <tr key={product.id} className="border-t">
+                  <td className="p-4">{product.name}</td>
 
-                <td className="p-4">{product.stockQuantity}</td>
+                  <td className="p-4">
+                    {minPrice !== undefined && maxPrice !== undefined && minPrice !== maxPrice
+                      ? `${minPrice.toLocaleString("vi-VN")} ₫ – ${maxPrice.toLocaleString("vi-VN")} ₫`
+                      : `${(minPrice ?? 0).toLocaleString("vi-VN")} ₫`}
+                  </td>
 
-                <td className="p-4">
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs ${
-                      product.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {product.active ? "Active" : "Inactive"}
-                  </span>
-                </td>
+                  <td className="p-4">{totalStock}</td>
 
-                <td className="space-x-3 p-4 text-center">
-                  <Link
-                    href={`/admin/products/${product.id}/edit`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Edit
-                  </Link>
+                  <td className="p-4">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs ${
+                        product.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {product.active ? "Active" : "Inactive"}
+                    </span>
+                  </td>
 
-                  <button
-                    onClick={() => handleDelete(product.id, product.name)}
-                    className="text-red-600 hover:underline"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  <td className="space-x-3 p-4 text-center">
+                    <Link
+                      href={`/admin/products/${product.id}/edit`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Edit
+                    </Link>
+
+                    <button
+                      onClick={() => handleDelete(product.id, product.name)}
+                      className="text-red-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

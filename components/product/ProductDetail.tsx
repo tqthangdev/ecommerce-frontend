@@ -26,7 +26,7 @@ function getMainImage(
 }
 
 export default function ProductDetail({ product }: Props) {
-  const variants = product.variants ?? [];
+  const variants = (product.variants ?? []).filter((v) => v.active);
   const hasVariants = variants.length > 0;
 
   const colors = Array.from(
@@ -66,13 +66,9 @@ export default function ProductDetail({ product }: Props) {
 
   const mainImage = getMainImage(product, selectedVariant);
 
-  const hasDiscount = product.discountPercent > 0;
+  const stock = selectedVariant?.stockQuantity ?? 0;
 
-  const stock =
-    selectedVariant?.stockQuantity ?? product.stockQuantity;
-
-  const price =
-    selectedVariant?.price ?? product.effectivePrice;
+  const price = selectedVariant?.price ?? 0;
 
   const stockLabel =
     stock > 0 ? `${stock} in stock` : "Out of stock";
@@ -123,18 +119,6 @@ export default function ProductDetail({ product }: Props) {
             <span className="text-3xl font-bold text-red-600">
               {price.toLocaleString("vi-VN")} đ
             </span>
-
-            {hasDiscount && (
-              <>
-                <span className="text-lg text-gray-400 line-through">
-                  {product.basePrice.toLocaleString("vi-VN")} đ
-                </span>
-
-                <span className="rounded bg-red-500 px-2 py-1 text-sm font-bold text-white">
-                  -{product.discountPercent}%
-                </span>
-              </>
-            )}
           </div>
 
           <p className="leading-7 text-gray-600">
