@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+// Fallback an toan cho URL Backend
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export async function POST(
@@ -9,13 +10,18 @@ export async function POST(
   try {
     const pathArray = (await params).path;
     const pathStr = pathArray.join("/");
+    
+    // Parse body an toan
     const body = await request.json().catch(() => ({}));
 
     // 1. Forward incoming cookies from client to Spring Boot
     const clientCookie = request.headers.get("cookie") || "";
 
+    // Target URL
+    const targetUrl = `${API_BASE_URL.replace(/\/$/, "")}/api/auth/${pathStr}`;
+
     // 2. Proxy request to Spring Boot Backend
-    const springRes = await fetch(`${API_BASE_URL}/api/auth/${pathStr}`, {
+    const springRes = await fetch(targetUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,7 +30,7 @@ export async function POST(
       body: JSON.stringify(body),
     });
 
-    const data = await springRes.json();
+    const data = await springRes.json().catch(() => ({}));
 
     if (!springRes.ok) {
       return NextResponse.json(data, { status: springRes.status });
@@ -33,25 +39,35 @@ export async function POST(
     // 3. Prepare response object for Next.js client
     const response = NextResponse.json(data);
 
-    // 4. Extract and forward all Set-Cookie headers from Spring Boot response
-    const setCookieHeaders = springRes.headers.getSetCookie 
-      ? springRes.headers.getSetCookie() 
-      : [springRes.headers.get("set-cookie")].filter(Boolean) as string[];
+    // 4. Safely extract Set-Cookie headers from Spring Boot response
+    try {
+      let cookiesToForward: string[] = [];
 
-    if (setCookieHeaders.length > 0) {
-      setCookieHeaders.forEach((cookieString) => {
+      if (typeof springRes.headers.getSetCookie === "function") {
+        cookiesToForward = springRes.headers.getSetCookie();
+      } else {
+        const rawCookie = springRes.headers.get("set-cookie");
+        if (rawCookie) {
+          cookiesToForward = [rawCookie];
+        }
+      }
+
+      cookiesToForward.forEach((cookieString) => {
         response.headers.append("Set-Cookie", cookieString);
       });
-      console.log(`[PROXY /api/auth/${pathStr}] Successfully forwarded ${setCookieHeaders.length} cookies from Spring Boot.`);
-    } else {
-      console.log(`[PROXY /api/auth/${pathStr}] No Set-Cookie header received from Spring Boot.`);
+    } catch (cookieError) {
+      console.error("Error forwarding cookies:", cookieError);
     }
 
     return response;
-  } catch (error) {
-    console.error("Proxy Error:", error);
+  } catch (error: any) {
+    console.error("Proxy Error Details:", error);
     return NextResponse.json(
-      { success: false, message: "Proxy Connection Error" },
+      {
+        success: false,
+        message: "Proxy Connection Error",
+        error: error?.message || String(error),
+      },
       { status: 500 }
     );
   }
