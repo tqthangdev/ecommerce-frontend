@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import AddToCartButton from "./AddToCartButton";
-import VariantSelector from "./VariantSelector";
-import { Product, ProductVariant } from "@/types/product";
+import ProductVariant from "./ProductVariant";
+import { Product, ProductVariant as ProductVariantType } from "@/types/product";
 import BackButton from "@/components/ui/BackButton";
 
 type Props = {
@@ -12,7 +11,7 @@ type Props = {
 
 function getMainImage(
   product: Product,
-  selectedVariant?: ProductVariant
+  selectedVariant?: ProductVariantType
 ): string {
   if (selectedVariant?.imageUrl) return selectedVariant.imageUrl;
 
@@ -26,43 +25,7 @@ function getMainImage(
 }
 
 export default function ProductDetail({ product }: Props) {
-  const variants = (product.variants ?? []).filter((v) => v.active);
-  const hasVariants = variants.length > 0;
-
-  const colors = Array.from(
-    new Set(variants.map((v) => String(v.color)))
-  );
-
-  const [selectedColor, setSelectedColor] = useState(
-    colors[0] ?? ""
-  );
-
-  const sizes = Array.from(
-    new Set(
-      variants
-        .filter((v) => String(v.color) === selectedColor)
-        .map((v) => String(v.size))
-    )
-  ).sort((a, b) => {
-    const na = Number(a);
-    const nb = Number(b);
-
-    return Number.isNaN(na) || Number.isNaN(nb)
-      ? a.localeCompare(b)
-      : na - nb;
-  });
-
-  const [selectedSize, setSelectedSize] = useState(
-    sizes[0] ?? ""
-  );
-
-  const selectedVariant = hasVariants
-    ? variants.find(
-        (v) =>
-          String(v.color) === selectedColor &&
-          String(v.size) === selectedSize
-      )
-    : undefined;
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariantType | undefined>(undefined);
 
   const mainImage = getMainImage(product, selectedVariant);
 
@@ -125,34 +88,14 @@ export default function ProductDetail({ product }: Props) {
             {product.description}
           </p>
 
-          {hasVariants && (
-            <div className="border-t pt-4">
-              <VariantSelector
-                variants={variants}
-                selectedColor={selectedColor}
-                selectedSize={selectedSize}
-                onColorChange={(color) => {
-                  setSelectedColor(color);
-
-                  const firstVariant = variants.find(
-                    (v) => String(v.color) === color
-                  );
-
-                  setSelectedSize(
-                    firstVariant
-                      ? String(firstVariant.size)
-                      : ""
-                  );
-                }}
-                onSizeChange={setSelectedSize}
-              />
-            </div>
-          )}
-
-          <AddToCartButton
-            product={product}
-            selectedVariant={selectedVariant}
-          />
+          <div className="border-t pt-4">
+            <ProductVariant
+              product={product}
+              selectedVariant={selectedVariant}
+              onVariantChange={setSelectedVariant}
+              autoSelectInStock
+            />
+          </div>
         </div>
       </div>
     </>

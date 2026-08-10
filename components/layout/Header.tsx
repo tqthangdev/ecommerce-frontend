@@ -25,7 +25,10 @@ export default function Header() {
   const isHome = pathname === "/";
 
   const items = useCartStore((state) => state.items);
-  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = items.length;
+  const quantityItemInCart = items.reduce((sum, item) => sum + item.quantity, 0);
+  const previousQuantityItemInCart = useRef(quantityItemInCart);
+  const [cartShake, setCartShake] = useState(false);
 
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
@@ -48,6 +51,22 @@ export default function Header() {
 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (quantityItemInCart > previousQuantityItemInCart.current) {
+      setCartShake(true);
+
+      const timer = setTimeout(() => {
+        setCartShake(false);
+      }, 600);
+
+      previousQuantityItemInCart.current = quantityItemInCart;
+
+      return () => clearTimeout(timer);
+    }
+
+    previousQuantityItemInCart.current = quantityItemInCart;
+  }, [quantityItemInCart]);
 
   const initials = user?.name
     ? user.name
@@ -112,11 +131,31 @@ export default function Header() {
               href="/cart"
               className={isHome ? "text-white" : "text-gray-900"}
             >
-              <div className="relative">
+              <div
+                className={`relative ${
+                  cartShake ? "animate-cart-shake" : ""
+                }`}
+                id="cart-icon-target"
+              >
                 <ShoppingCart size={26} />
 
                 {cartCount > 0 && (
-                  <span className="absolute -right-3 -top-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                  <span
+                    className="
+                      absolute
+                      -right-3
+                      -top-3
+                      flex
+                      h-5
+                      w-5
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-red-500
+                      text-xs
+                      text-white
+                    "
+                  >
                     {cartCount}
                   </span>
                 )}

@@ -11,6 +11,7 @@ interface CartState {
   removeItem: (variantId: number) => Promise<void>;
   increase: (variantId: number) => Promise<void>;
   decrease: (variantId: number) => Promise<void>;
+  setQuantity: (variantId: number, quantity: number) => Promise<void>;
   clear: () => Promise<void>;
   reset: () => void;
   syncFromServer: () => Promise<void>;
@@ -115,6 +116,9 @@ export const useCartStore = create<CartState>()(
         const item = state.items.find((i) => itemKey(i) === key);
         if (!item) return;
 
+        const stock = item.variant.stockQuantity;
+        if (stock > 0 && item.quantity >= stock) return;
+
         const newQty = item.quantity + 1;
         set({
           items: state.items.map((i) => (itemKey(i) === key ? { ...i, quantity: newQty } : i)),
@@ -146,6 +150,33 @@ export const useCartStore = create<CartState>()(
 
         try {
           await cartApi.updateCartItem(variantId, newQty);
+          const cart = await cartApi.getCart();
+          set({ totalQuantity: cart.totalQuantity, totalAmount: cart.total });
+        } catch {
+          set({
+            items: state.items.map((i) =>
+              itemKey(i) === key ? { ...i, quantity: item.quantity } : i
+            ),
+          });
+        }
+      },
+
+      setQuantity: async (variantId, quantity) => {
+        const state = get();
+        const key = String(variantId);
+        const item = state.items.find((i) => itemKey(i) === key);
+        if (!item) return;
+
+        const newQty = Math.max(1, Math.floor(quantity));
+        const maxQty = Math.max(newQty, item.variant.stockQuantity || newQty);
+        const clamped = Math.min(newQty, maxQty);
+
+        set({
+          items: state.items.map((i) => (itemKey(i) === key ? { ...i, quantity: clamped } : i)),
+        });
+
+        try {
+          await cartApi.updateCartItem(variantId, clamped);
           const cart = await cartApi.getCart();
           set({ totalQuantity: cart.totalQuantity, totalAmount: cart.total });
         } catch {

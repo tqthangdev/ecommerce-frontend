@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Product, ProductVariant } from "@/types/product";
-import VariantSelector from "./VariantSelector";
+import ProductVariantPicker from "./ProductVariant";
 
 type Props = {
   product: Product;
@@ -18,65 +18,9 @@ export default function ProductVariantModal({
   onClose,
   onConfirm,
 }: Props) {
-  const variants = product.variants ?? [];
-
-  const colors = Array.from(
-    new Set(variants.map((v) => String(v.color)))
-  );
-
-  const [selectedColor, setSelectedColor] = useState("");
-  const [selectedSize, setSelectedSize] = useState("");
-
-  const sizes = Array.from(
-    new Set(
-      variants
-        .filter((v) => String(v.color) === selectedColor)
-        .map((v) => String(v.size))
-    )
-  );
-
-  useEffect(() => {
-    if (!open) return;
-
-    const firstColor = colors[0] ?? "";
-
-    setSelectedColor(firstColor);
-
-    const firstSize =
-      variants.find(
-        (v) => String(v.color) === firstColor
-      )?.size ?? "";
-
-    setSelectedSize(String(firstSize));
-  }, [open, product.id]);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
 
   if (!open) return null;
-
-  const selectedVariant = variants.find(
-    (v) =>
-      String(v.color) === selectedColor &&
-      String(v.size) === selectedSize
-  );
-
-  function handleColorChange(color: string) {
-    setSelectedColor(color);
-
-    const firstVariant = variants.find(
-      (v) => String(v.color) === color
-    );
-
-    setSelectedSize(
-      firstVariant ? String(firstVariant.size) : ""
-    );
-  }
-
-  function handleConfirm() {
-    if (!selectedVariant) return;
-    if (selectedVariant.stockQuantity <= 0) return;
-
-    onConfirm(selectedVariant);
-    onClose();
-  }
 
   return createPortal(
     <div
@@ -115,38 +59,21 @@ export default function ProductVariantModal({
           </button>
         </div>
 
-        <VariantSelector
-          variants={variants}
-          selectedColor={selectedColor}
-          selectedSize={selectedSize}
-          onColorChange={handleColorChange}
-          onSizeChange={setSelectedSize}
-        />
-
         {selectedVariant && (
-          <p className="my-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-gray-600">
             Stock: {selectedVariant.stockQuantity}
           </p>
         )}
 
-        <button
-          onClick={handleConfirm}
-          disabled={
-            !selectedVariant ||
-            selectedVariant.stockQuantity <= 0
-          }
-          className="
-            w-full rounded-lg
-            bg-black px-4 py-3
-            font-semibold text-white
-            transition
-            hover:bg-gray-800
-            disabled:cursor-not-allowed
-            disabled:bg-gray-300
-          "
-        >
-          Add to Cart
-        </button>
+        <ProductVariantPicker
+          product={product}
+          autoSelectInStock
+          onVariantChange={setSelectedVariant}
+          onAdded={(variant) => {
+            onConfirm(variant);
+            onClose();
+          }}
+        />
       </div>
     </div>,
     document.body

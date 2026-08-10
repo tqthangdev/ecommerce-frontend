@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createProduct,
@@ -33,12 +33,15 @@ const PRICE_UNIT_MULTIPLIER: Record<string, number> = {
   thousand: 1_000,
 };
 
-interface VariantRow {
+interface PendingVariant {
+  key: number;
   sku: string;
   color: string;
   size: string;
-  price: string;
-  stockQuantity: string;
+  price: number;
+  stockQuantity: number;
+  imageUrl: string;
+  active: boolean;
 }
 
 type Props = {
@@ -63,16 +66,22 @@ export default function ProductForm({ productId }: Props) {
   const [active, setActive] = useState(true);
   const [featured, setFeatured] = useState(false);
 
-  const [variants, setVariants] = useState<VariantRow[]>([
-    { sku: "", color: "", size: "", price: "", stockQuantity: "" },
-  ]);
-
   const [imageMode, setImageMode] = useState<"url" | "upload">("url");
   const [image, setImage] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  // Variants staged while the product does not exist yet (create flow).
+  // They are sent with createProduct() instead of hitting /variants endpoints.
+  const [pendingVariants, setPendingVariants] = useState<PendingVariant[]>([]);
+  const pendingVariantsRef = useRef<PendingVariant[]>([]);
+
+  function updatePendingVariants(list: PendingVariant[]) {
+    setPendingVariants(list);
+    pendingVariantsRef.current = list;
+  }
 
   useEffect(() => {
     async function loadOptions() {
@@ -101,62 +110,29 @@ export default function ProductForm({ productId }: Props) {
         setBrandId(String(p.brand.id));
         setActive(p.active);
         setFeatured(p.featured);
-        setVariants(
-          (p.variants ?? []).map((v) => ({
-            sku: v.sku,
-            color: v.color,
-            size: v.size,
-            price: String(v.price / PRICE_UNIT_MULTIPLIER.million),
-            stockQuantity: String(v.stockQuantity),
-          }))
-        );
       } finally {
         setLoading(false);
       }
     })();
   }, [isEdit, productId]);
 
-  const hasValidVariants = variants.some(
-    (v) => v.sku.trim() !== "" && v.price !== ""
-  );
+  // In create mode, at least one variant must be staged before the product can
+  // be saved (edit mode keeps variants server-side, so the check only applies
+  // to pending variants).
+  const hasPendingVariants = pendingVariants.length > 0;
 
   const isValid =
     name.trim().length >= 2 &&
     categoryId !== "" &&
     brandId !== "" &&
-    hasValidVariants;
-
-  function updateVariant(index: number, field: keyof VariantRow, value: string) {
-    setVariants((prev) =>
-      prev.map((v, i) => (i === index ? { ...v, [field]: value } : v))
-    );
-  }
-
-  function addVariantRow() {
-    setVariants((prev) => [
-      ...prev,
-      { sku: "", color: "", size: "", price: "", stockQuantity: "" },
-    ]);
-  }
-
-  function removeVariantRow(index: number) {
-    setVariants((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function toVariantPayload(v: VariantRow): VariantPayload {
-    const price = Number(v.price) * PRICE_UNIT_MULTIPLIER.million;
-    return {
-      sku: v.sku.trim(),
-      color: v.color.trim(),
-      size: v.size.trim(),
-      price,
-      stockQuantity: Number(v.stockQuantity) || 0,
-      active: true,
-    };
-  }
+    (isEdit || hasPendingVariants);
 
   async function submit() {
     if (!isValid) return;
+    if (!isEdit && pendingVariantsRef.current.length === 0) {
+      setError("At least one variant is required.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -174,7 +150,15 @@ export default function ProductForm({ productId }: Props) {
       } else {
         const created = await createProduct({
           ...basePayload,
-          variants: variants.filter((v) => v.sku.trim() !== "").map(toVariantPayload),
+          variants: pendingVariantsRef.current.map((v) => ({
+            sku: v.sku.trim(),
+            color: v.color.trim(),
+            size: v.size.trim(),
+            price: v.price,
+            stockQuantity: v.stockQuantity,
+            imageUrl: v.imageUrl.trim() || undefined,
+            active: v.active,
+          })),
         });
 
         if (imageMode === "upload" && image) {
@@ -196,15 +180,6 @@ export default function ProductForm({ productId }: Props) {
     if (!productId) return;
     const p = await getProductById(productId);
     setProduct(p);
-    setVariants(
-      (p.variants ?? []).map((v) => ({
-        sku: v.sku,
-        color: v.color,
-        size: v.size,
-        price: String(v.price / PRICE_UNIT_MULTIPLIER.million),
-        stockQuantity: String(v.stockQuantity),
-      }))
-    );
   }
 
   if (loading || loadingOptions) return <Loading />;
@@ -303,77 +278,17 @@ export default function ProductForm({ productId }: Props) {
           <div>
             <h2 className="text-xl font-semibold">Variants</h2>
             <p className="text-xs text-gray-400">
-              At least one variant is required. Price is entered in millions (1 = 1,000,000 đ).
+              At least one variant is required. Add variants one by one, then create the product.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={addVariantRow}
-            className="rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-gray-50"
-          >
-            + Add variant
-          </button>
         </div>
 
-        {isEdit && product ? (
-          <EditVariantsSection
-            product={product}
-            onChanged={refreshProduct}
-          />
-        ) : (
-          <>
-            {variants.map((v, index) => (
-              <div key={index} className="mb-3 grid grid-cols-6 gap-2 rounded-lg border p-3">
-                <input
-                  className="col-span-2 rounded border p-2 text-sm"
-                  placeholder="SKU"
-                  value={v.sku}
-                  onChange={(e) => updateVariant(index, "sku", e.target.value)}
-                />
-                <input
-                  className="rounded border p-2 text-sm"
-                  placeholder="Color"
-                  value={v.color}
-                  onChange={(e) => updateVariant(index, "color", e.target.value)}
-                />
-                <input
-                  className="rounded border p-2 text-sm"
-                  placeholder="Size"
-                  value={v.size}
-                  onChange={(e) => updateVariant(index, "size", e.target.value)}
-                />
-                <input
-                  type="number"
-                  min={0}
-                  className="rounded border p-2 text-sm"
-                  placeholder="Price (M)"
-                  value={v.price}
-                  onChange={(e) => updateVariant(index, "price", e.target.value)}
-                />
-                <div className="flex items-center gap-1">
-                  <input
-                    type="number"
-                    min={0}
-                    className="w-full rounded border p-2 text-sm"
-                    placeholder="Stock"
-                    value={v.stockQuantity}
-                    onChange={(e) => updateVariant(index, "stockQuantity", e.target.value)}
-                  />
-                  {variants.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeVariantRow(index)}
-                      className="text-sm text-red-500 hover:text-red-700"
-                      title="Remove variant"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </>
-        )}
+        <EditVariantsSection
+          product={product}
+          onChanged={refreshProduct}
+          pendingVariants={pendingVariants}
+          onPendingVariantsChange={updatePendingVariants}
+        />
       </section>
 
       {/* Image (create) / Images (edit) */}
@@ -450,16 +365,23 @@ export default function ProductForm({ productId }: Props) {
   );
 }
 
-// ---- Edit-only sections (lifted from the old edit page) ----
+// ---- Variant section (shared by create and edit) ----
+
+type EditVariantsSectionProps = {
+  product: Product | null;
+  onChanged: () => void;
+  pendingVariants: PendingVariant[];
+  onPendingVariantsChange: (list: PendingVariant[]) => void;
+};
 
 function EditVariantsSection({
   product,
   onChanged,
-}: {
-  product: Product;
-  onChanged: () => void;
-}) {
+  pendingVariants,
+  onPendingVariantsChange,
+}: EditVariantsSectionProps) {
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingKey, setEditingKey] = useState<number | null>(null);
   const [sku, setSku] = useState("");
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
@@ -471,8 +393,11 @@ function EditVariantsSection({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ProductVariant | null>(null);
+  const [deletePendingKey, setDeletePendingKey] = useState<number | null>(null);
 
-  const isEditing = editingId !== null;
+  const nextPendingKeyRef = useRef(1);
+
+  const isEditing = editingId !== null || editingKey !== null;
 
   function resetForm() {
     setSku("");
@@ -484,11 +409,13 @@ function EditVariantsSection({
     setImageUrl("");
     setVariantActive(true);
     setEditingId(null);
+    setEditingKey(null);
     setError(null);
   }
 
   function startEditing(v: ProductVariant) {
     setEditingId(v.id);
+    setEditingKey(null);
     setSku(v.sku);
     setColor(v.color);
     setSize(v.size);
@@ -498,6 +425,22 @@ function EditVariantsSection({
     setPrice(String(v.price / PRICE_UNIT_MULTIPLIER[unit]));
     setStockQuantity(String(v.stockQuantity));
     setImageUrl(v.imageUrl ?? "");
+    setVariantActive(v.active);
+    setError(null);
+  }
+
+  function startEditingPending(v: PendingVariant) {
+    setEditingKey(v.key);
+    setEditingId(null);
+    setSku(v.sku);
+    setColor(v.color);
+    setSize(v.size);
+    const unit: "million" | "thousand" =
+      v.price < PRICE_UNIT_MULTIPLIER.million ? "thousand" : "million";
+    setPriceUnit(unit);
+    setPrice(String(v.price / PRICE_UNIT_MULTIPLIER[unit]));
+    setStockQuantity(String(v.stockQuantity));
+    setImageUrl(v.imageUrl);
     setVariantActive(v.active);
     setError(null);
   }
@@ -513,7 +456,26 @@ function EditVariantsSection({
     setError(null);
     try {
       const actualPrice = (Number(price) || 0) * PRICE_UNIT_MULTIPLIER[priceUnit];
-      if (editingId !== null) {
+
+      if (editingKey !== null) {
+        // Update a pending (not yet created) variant in place.
+        onPendingVariantsChange(
+          pendingVariants.map((pv) =>
+            pv.key === editingKey
+              ? {
+                  ...pv,
+                  sku,
+                  color,
+                  size,
+                  price: actualPrice,
+                  stockQuantity: Number(stockQuantity),
+                  imageUrl,
+                  active: variantActive,
+                }
+              : pv
+          )
+        );
+      } else if (editingId !== null) {
         await updateVariant(editingId, {
           sku,
           color,
@@ -523,7 +485,8 @@ function EditVariantsSection({
           imageUrl,
           active: variantActive,
         });
-      } else {
+        onChanged();
+      } else if (product) {
         await addVariant(product.id, {
           sku,
           color,
@@ -533,13 +496,28 @@ function EditVariantsSection({
           imageUrl,
           active: variantActive,
         });
+        onChanged();
+      } else {
+        // Product does not exist yet — stage the variant for createProduct().
+        const next: PendingVariant = {
+          key: nextPendingKeyRef.current++,
+          sku,
+          color,
+          size,
+          price: actualPrice,
+          stockQuantity: Number(stockQuantity),
+          imageUrl,
+          active: variantActive,
+        };
+        onPendingVariantsChange([...pendingVariants, next]);
       }
       resetForm();
-      onChanged();
     } catch (err: unknown) {
       setError(
         (err as Error)?.message ||
-        (editingId !== null ? "Failed to update variant" : "Failed to add variant")
+        (editingId !== null || editingKey !== null
+          ? "Failed to update variant"
+          : "Failed to add variant")
       );
     } finally {
       setSubmitting(false);
@@ -561,7 +539,27 @@ function EditVariantsSection({
           </tr>
         </thead>
         <tbody>
-          {(product.variants ?? []).map((v) => (
+          {pendingVariants.map((pv) => (
+            <tr key={pv.key} className={`border-b align-top ${editingKey === pv.key ? "bg-yellow-50" : ""}`}>
+              <td className="break-words py-2">{pv.sku}</td>
+              <td className="break-words py-2">{pv.color}</td>
+              <td className="break-words py-2">{pv.size}</td>
+              <td className="break-words py-2">
+                {Math.round(pv.price).toLocaleString("vi-VN")}đ
+              </td>
+              <td className="break-words py-2">{pv.stockQuantity}</td>
+              <td className="py-2">{pv.active ? "Yes" : "No"}</td>
+              <td className="space-x-2 text-right whitespace-nowrap py-2">
+                <button onClick={() => startEditingPending(pv)} className="text-blue-600">
+                  Edit
+                </button>
+                <button onClick={() => setDeletePendingKey(pv.key)} className="text-red-600">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+          {(product?.variants ?? []).map((v) => (
             <tr key={v.id} className={`border-b align-top ${editingId === v.id ? "bg-yellow-50" : ""}`}>
               <td className="break-words py-2">{v.sku}</td>
               <td className="break-words py-2">{v.color}</td>
@@ -693,6 +691,23 @@ function EditVariantsSection({
           onChanged();
         }}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={deletePendingKey !== null}
+        title="Delete Variant"
+        description={`Remove variant "${pendingVariants.find((pv) => pv.key === deletePendingKey)?.sku}"?`}
+        confirmText="Delete"
+        onConfirm={() => {
+          if (deletePendingKey !== null) {
+            onPendingVariantsChange(
+              pendingVariants.filter((pv) => pv.key !== deletePendingKey)
+            );
+            if (editingKey === deletePendingKey) resetForm();
+          }
+          setDeletePendingKey(null);
+        }}
+        onCancel={() => setDeletePendingKey(null)}
       />
     </>
   );
