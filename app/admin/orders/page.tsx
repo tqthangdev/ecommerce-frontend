@@ -5,6 +5,7 @@ import { getAdminOrders, updateOrderStatus } from "@/services/admin/order.admin.
 import { Order, OrderStatus } from "@/types/order";
 import { PageResponse } from "@/types/api";
 import { getErrorMessage } from "@/lib/api";
+import { msg } from "@/lib/messages";
 import Loading from "@/components/ui/Loading";
 import Link from "next/link";
 
@@ -181,7 +182,7 @@ export default function AdminOrdersPage() {
       {loading ? (
         <Loading />
       ) : !data || data.totalElements === 0 ? (
-        <p className="py-10 text-center text-gray-500">No orders found.</p>
+        <p className="py-10 text-center text-gray-500">{msg.noOrders}</p>
       ) : (
         <>
           <table className="w-full text-sm">

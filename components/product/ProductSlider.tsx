@@ -44,7 +44,7 @@ function Carousel({ products }: { products: Product[] }) {
   const [index, setIndex] = useState(CLONES);
   const isAnimatingRef = useRef(false);
 
-  // Reset index khi số cột responsive đổi
+  // Reset index when the responsive column count changes
   useEffect(() => {
     setIndex(CLONES);
     if (trackRef.current) {
@@ -77,9 +77,9 @@ function Carousel({ products }: { products: Product[] }) {
   }
 
   function handleTransitionEnd(e: React.TransitionEvent<HTMLDivElement>) {
-    // Bỏ qua nếu sự kiện bubble lên từ phần tử con (card, button...)
+    // Ignore if the event bubbled up from a child element (card, button...)
     if (e.target !== trackRef.current) return;
-    // Bỏ qua nếu không phải transition của property "transform"
+    // Ignore if it is not a "transform" property transition
     if (e.propertyName !== "transform") return;
 
     isAnimatingRef.current = false;
@@ -95,7 +95,7 @@ function Carousel({ products }: { products: Product[] }) {
 
     if (resetIndex !== null) {
       track.style.transition = "none";
-      void track.offsetHeight; // ép reflow
+      void track.offsetHeight; // force reflow
       track.style.transform = `translateX(-${resetIndex * (100 / visibleItems)}%)`;
       setIndex(resetIndex);
     }

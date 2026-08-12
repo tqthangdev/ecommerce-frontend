@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import ProductGrid from "./ProductGrid";
 import ProductPagination from "./ProductPagination";
-import { Product } from "@/types/product";
 import { getProducts } from "@/services/product.service";
+import { msg } from "@/lib/messages";
 import Loading from "@/components/ui/Loading";
 
 type Props = {
@@ -24,34 +24,24 @@ export default function ProductList({
   sort,
   page,
 }: Props) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ["products", { keyword, categoryId, minPrice, maxPrice, sort, page, size: 12 }],
+    queryFn: () =>
+      getProducts({
+        keyword,
+        categoryId: categoryId ? Number(categoryId) : undefined,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        sort,
+        page: Number(page ?? 1) - 1,
+        size: 12,
+      }),
+  });
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-
-    getProducts({
-      keyword,
-      categoryId: categoryId ? Number(categoryId) : undefined,
-      minPrice: minPrice ? Number(minPrice) : undefined,
-      maxPrice: maxPrice ? Number(maxPrice) : undefined,
-      sort,
-      page: Number(page ?? 1) - 1,
-      size: 12,
-    })
-      .then((data) => {
-        setProducts(data.content);
-        setTotalPages(data.totalPages);
-      })
-      .catch((err) => {
-        let messeage = err?.message ?? "Failed to load products. Please try again.";
-        setError(messeage);
-      })
-      .finally(() => setLoading(false));
-  }, [keyword, categoryId, minPrice, maxPrice, sort, page]);
+  const products = query.data?.content ?? [];
+  const totalPages = query.data?.totalPages ?? 0;
+  const loading = query.isPending;
+  const error = query.error;
 
   if (loading) {
     return <Loading />;
@@ -60,7 +50,7 @@ export default function ProductList({
   if (error) {
     return (
       <div className="flex justify-center py-20">
-        <p className="text-red-500">{error}</p>
+        <p className="text-red-500">{error?.message ?? msg.loadProductsFailed}</p>
       </div>
     );
   }
@@ -68,9 +58,9 @@ export default function ProductList({
   if (products.length === 0) {
     return (
     <div className="flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-dashed">
-      <h2 className="text-xl font-semibold">Không tìm thấy sản phẩm</h2>
+      <h2 className="text-xl font-semibold">No products found</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.
+        Try changing your filters or search keywords.
       </p>
     </div>
     );

@@ -6,6 +6,7 @@ import { useCartStore } from "@/stores/cart.store";
 import { checkout } from "@/services/order.service";
 import { getAddresses, createAddress } from "@/services/address.service";
 import { getErrorMessage } from "@/lib/api";
+import { msg } from "@/lib/messages";
 import { CheckoutRequest, PaymentMethod } from "@/types/order";
 import { Address, AddressRequest } from "@/types/address";
 import { CartItem } from "@/types/cart";
@@ -78,7 +79,7 @@ export default function CheckoutForm() {
     e.preventDefault();
 
     if (items.length === 0) {
-      setError("Your cart is empty.");
+      setError(msg.cartEmpty);
       scrollTop();
       return;
     }
@@ -96,7 +97,7 @@ export default function CheckoutForm() {
       }
 
       if (!addressId) {
-        setError("Please select or add a shipping address.");
+        setError(msg.selectShippingAddress);
         setAddressError(true);
         scrollTop();
         return;

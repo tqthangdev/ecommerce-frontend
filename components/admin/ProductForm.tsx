@@ -27,6 +27,7 @@ import {
 import Loading from "@/components/ui/Loading";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import BackButton from "@/components/ui/BackButton";
+import { msg } from "@/lib/messages";
 
 const PRICE_UNIT_MULTIPLIER: Record<string, number> = {
   million: 1_000_000,
@@ -130,7 +131,7 @@ export default function ProductForm({ productId }: Props) {
   async function submit() {
     if (!isValid) return;
     if (!isEdit && pendingVariantsRef.current.length === 0) {
-      setError("At least one variant is required.");
+      setError(msg.atLeastOneVariant);
       return;
     }
     setSaving(true);
@@ -170,7 +171,7 @@ export default function ProductForm({ productId }: Props) {
 
       router.push("/admin/products");
     } catch (err) {
-      setError("Could not save product. Check the fields and try again.");
+      setError(msg.saveProductFailed);
     } finally {
       setSaving(false);
     }
@@ -516,8 +517,8 @@ function EditVariantsSection({
       setError(
         (err as Error)?.message ||
         (editingId !== null || editingKey !== null
-          ? "Failed to update variant"
-          : "Failed to add variant")
+          ? msg.failedToUpdateVariant
+          : msg.failedToAddVariant)
       );
     } finally {
       setSubmitting(false);
@@ -734,7 +735,7 @@ function EditImagesSection({
       await uploadImage(product.id, file);
       onChanged();
     } catch (err: any) {
-      setError(err?.message || "Failed to upload image");
+      setError(err?.message || msg.uploadImageFailed);
     } finally {
       setUploading(false);
     }
@@ -749,7 +750,7 @@ function EditImagesSection({
       setImageUrl("");
       onChanged();
     } catch (err: any) {
-      setError(err?.message || "Failed to add image");
+      setError(err?.message || msg.addImageFailed);
     } finally {
       setSubmittingUrl(false);
     }

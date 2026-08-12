@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import ProductDetail from "@/components/product/ProductDetail";
 import { getProductBySlug } from "@/services/product.service";
+import { msg } from "@/lib/messages";
 import { Product } from "@/types/product";
 import Loading from "@/components/ui/Loading";
 
@@ -33,7 +34,7 @@ export default function ProductDetailPage() {
   if (error || !product) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-20 text-center">
-        <h1 className="text-3xl font-bold">Product not found</h1>
+        <h1 className="text-3xl font-bold">{msg.productNotFound}</h1>
       </main>
     );
   }

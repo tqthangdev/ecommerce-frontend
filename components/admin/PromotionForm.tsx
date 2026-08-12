@@ -10,6 +10,7 @@ import {
 } from "@/services/admin/promotion.admin.service";
 import { getProducts, VariantPayload } from "@/services/admin/product.admin.service";
 import { Product } from "@/types/product";
+import { msg } from "@/lib/messages";
 import Loading from "@/components/ui/Loading";
 import BackButton from "@/components/ui/BackButton";
 
@@ -56,7 +57,7 @@ export default function PromotionForm({ initial, promotionId }: Props) {
   useEffect(() => {
     getProducts(0, 100)
       .then((page) => setProducts(page.content))
-      .catch(() => setError("Failed to load products"))
+      .catch(() => setError(msg.loadProductsForPromotionFailed))
       .finally(() => setLoadingProducts(false));
   }, []);
 
@@ -100,7 +101,7 @@ export default function PromotionForm({ initial, promotionId }: Props) {
       }
       router.push("/admin/promotions");
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Could not save promotion");
+      setError(err?.response?.data?.message || msg.savePromotionFailed);
     } finally {
       setSaving(false);
     }

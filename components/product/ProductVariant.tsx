@@ -137,6 +137,8 @@ export default function ProductVariant({
       product.images?.find((img) => img.primary)?.imageUrl ??
       product.images?.[0]?.imageUrl;
 
+    if (onAdded) onAdded(selectedVariant);
+
     await addItem({
       product: {
         ...product,
@@ -145,8 +147,6 @@ export default function ProductVariant({
       variant: selectedVariant,
       quantity,
     });
-
-    if (onAdded) onAdded(selectedVariant);
   }
 
   return (

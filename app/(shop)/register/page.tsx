@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { useCartStore } from "@/stores/cart.store";
 import { register as registerApi } from "@/lib/auth.service";
 import { getErrorMessage } from "@/lib/api";
+import { msg } from "@/lib/messages";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,11 +20,11 @@ export default function RegisterPage() {
 
   async function register() {
     if (!name || !email || !password) {
-      setError("Please fill in all fields");
+      setError(msg.fillAllFields);
       return;
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+      setError(msg.passwordMin8);
       return;
     }
 

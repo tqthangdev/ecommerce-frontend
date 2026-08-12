@@ -12,6 +12,7 @@ import {
   Role,
 } from "@/services/admin/role.admin.service";
 import BackButton from "@/components/ui/BackButton";
+import { msg } from "@/lib/messages";
 
 type Props = {
   initial?: AdminUser;
@@ -39,29 +40,29 @@ export default function UserForm({ initial, userId }: Props) {
           setRole(availableRoles[0].name);
         }
       })
-      .catch(() => setError("Failed to load roles"));
+      .catch(() => setError(msg.loadRolesFailed));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function validate() {
     if (fullName.trim().length < 2 || fullName.trim().length > 100) {
-      return "Full name must be between 2 and 100 characters";
+      return msg.fullNameLength;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return "Invalid email format";
+      return msg.invalidEmailFormat;
     }
 
     if (!isEdit && (password.length < 8 || password.length > 100)) {
-      return "Password must be between 8 and 100 characters";
+      return msg.passwordLength;
     }
 
     if (isEdit && password && (password.length < 8 || password.length > 100)) {
-      return "Password must be between 8 and 100 characters";
+      return msg.passwordLength;
     }
 
     if (!role) {
-      return "Please select a role";
+      return msg.selectRole;
     }
 
     return "";
@@ -104,7 +105,7 @@ export default function UserForm({ initial, userId }: Props) {
       setError(
         err.response?.data?.message ||
         err.message ||
-        "Something went wrong"
+        msg.somethingWentWrong
       );
     } finally {
       setSaving(false);

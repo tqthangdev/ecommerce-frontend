@@ -2,6 +2,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore, User } from "@/stores/auth.store";
 import { useServerStore } from "@/stores/server.store";
+import { msg } from "@/lib/messages";
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -112,7 +113,7 @@ api.interceptors.response.use(
       return Promise.resolve({
         data: {
           success: false,
-          message: "SERVER_UNAVAILABLE",
+          message: msg.serverUnavailable,
           data: null,
         },
       });
@@ -192,29 +193,29 @@ export function getErrorMessage(err: unknown): string {
 
   if (axios.isAxiosError(err)) {
     if (!err.response) {
-      return "Unable to connect to the server.";
+      return msg.unableToConnect;
     }
 
     const data = err.response.data as ApiResponse<unknown> | undefined;
 
     switch (err.response.status) {
       case 401:
-        return data?.message || "Session expired.";
+        return data?.message || msg.sessionExpired;
 
       case 403:
-        return data?.message || "You do not have permission.";
+        return data?.message || msg.noPermission;
 
       case 404:
-        return data?.message || "Resource not found.";
+        return data?.message || msg.resourceNotFound;
 
       case 429:
-        return data?.message || "Too many attempts. Please try again later.";
+        return data?.message || msg.tooManyAttempts;
 
       case 500:
-        return "Internal server error.";
+        return msg.internalServerError;
 
       default:
-        return data?.message || "Request failed.";
+        return data?.message || msg.requestFailed;
     }
   }
 
@@ -222,5 +223,5 @@ export function getErrorMessage(err: unknown): string {
     return err.message;
   }
 
-  return "Something went wrong.";
+  return msg.somethingWentWrong;
 }

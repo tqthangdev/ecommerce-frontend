@@ -10,6 +10,7 @@ import {
 } from "@/services/admin/order.admin.service";
 import { Order } from "@/types/order";
 import { getErrorMessage } from "@/lib/api";
+import { msg } from "@/lib/messages";
 import Loading from "@/components/ui/Loading";
 import BackButton from "@/components/ui/BackButton";
 
@@ -61,7 +62,7 @@ export default function AdminOrderDetailPage() {
         setOrder(data);
         setSelectedStatus(data.status);
       })
-      .catch(() => setError("Failed to load order."))
+      .catch(() => setError(msg.loadOrderFailed))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -94,7 +95,7 @@ export default function AdminOrderDetailPage() {
   if (error || !order) {
     return (
       <div className="p-8 text-red-500">
-        {error || "Order not found."}
+        {error || msg.orderNotFound}
       </div>
     );
   }

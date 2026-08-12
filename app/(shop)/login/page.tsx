@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { useCartStore } from "@/stores/cart.store";
 import { login as loginApi } from "@/lib/auth.service";
 import { getErrorMessage } from "@/lib/api";
+import { msg } from "@/lib/messages";
 import { canAccessAdmin } from "@/lib/permission";
 
 export default function LoginPage() {
@@ -19,7 +20,7 @@ export default function LoginPage() {
 
   async function handleLogin() {
     if (!email || !password) {
-      setError("Please enter email/password");
+      setError(msg.enterEmailPassword);
       return;
     }
 

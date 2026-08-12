@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getOrderById, cancelOrder as cancelOrderApi } from "@/services/order.service";
 import { getErrorMessage } from "@/lib/api";
+import { msg } from "@/lib/messages";
 import { Order } from "@/types/order";
 import Loading from "@/components/ui/Loading";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -51,7 +52,7 @@ export default function OrderDetailPage() {
 
     getOrderById(id)
       .then(setOrder)
-      .catch(() => setError("Failed to load order."))
+      .catch(() => setError(msg.loadOrderFailed))
       .finally(() => setLoading(false));
   }, [id]);
 

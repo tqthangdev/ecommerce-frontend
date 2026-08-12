@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
+import { msg } from "@/lib/messages";
 import Loading from "@/components/ui/Loading";
 
 import { getProducts } from "@/services/product.service";
@@ -28,44 +29,23 @@ export default function ProductRawList({
   size = 8,
   children,
 }: Props) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ["products", { keyword, categoryId, minPrice, maxPrice, sort, page, size }],
+    queryFn: () =>
+      getProducts({
+        keyword,
+        categoryId: categoryId ? Number(categoryId) : undefined,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        sort,
+        page: Number(page ?? 1) - 1,
+        size,
+      }),
+  });
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-
-    getProducts({
-      keyword,
-      categoryId: categoryId ? Number(categoryId) : undefined,
-      minPrice: minPrice ? Number(minPrice) : undefined,
-      maxPrice: maxPrice ? Number(maxPrice) : undefined,
-      sort,
-      page: Number(page ?? 1) - 1,
-      size,
-    })
-      .then((data) => {
-        setProducts(data.content);
-      })
-      .catch((err) => {
-        const message =
-          err?.message ?? "Failed to load products. Please try again.";
-
-        setError(message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [
-    keyword,
-    categoryId,
-    minPrice,
-    maxPrice,
-    sort,
-    page,
-    size,
-  ]);
+  const products = query.data?.content ?? [];
+  const loading = query.isPending;
+  const error = query.error;
 
   if (loading) {
     return <Loading />;
@@ -74,7 +54,7 @@ export default function ProductRawList({
   if (error) {
     return (
       <div className="flex justify-center py-20">
-        <p className="text-red-500">{error}</p>
+        <p className="text-red-500">{error?.message ?? msg.loadProductsFailed}</p>
       </div>
     );
   }

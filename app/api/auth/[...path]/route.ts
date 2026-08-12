@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { msg } from "@/lib/messages";
 
-// Fallback an toan cho URL Backend
+// Safe fallback for Backend URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export async function POST(
@@ -65,7 +66,7 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        message: "Proxy Connection Error",
+        message: msg.proxyConnectionError,
         error: error?.message || String(error),
       },
       { status: 500 }

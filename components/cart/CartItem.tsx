@@ -99,14 +99,13 @@ export default function CartItem({ item, selected = false, onToggleSelect }: Pro
       <div className="min-w-0 flex-1">
         <h3 className="truncate font-semibold">{product.name}</h3>
 
-        {item.variant.color && (
-          <p className="mt-0.5 text-sm text-gray-500">
-            {item.variant.color}
-            {item.variant.size ? ` / ${item.variant.size}` : ""}
+        {(item.variant.color || item.variant.size) && (
+          <p className="mt-0.5 truncate text-sm text-gray-500">
+            {[item.variant.color, item.variant.size].filter(Boolean).join(" / ")}
           </p>
         )}
 
-        <p className="mt-1 text-red-600">{price.toLocaleString("vi-VN")} đ</p>
+        <p className="mt-1 truncate text-red-600">{price.toLocaleString("vi-VN")} đ</p>
       </div>
 
       <div className="flex items-center">
@@ -156,8 +155,8 @@ export default function CartItem({ item, selected = false, onToggleSelect }: Pro
         </button>
       </div>
 
-      <div className="w-44 shrink-0 text-right">
-        <p className="text-red-600 font-semibold">{(price * item.quantity).toLocaleString("vi-VN")} đ</p>
+      <div className="min-w-0 shrink text-right">
+        <p className="truncate text-red-600 font-semibold">{(price * item.quantity).toLocaleString("vi-VN")} đ</p>
       </div>
     </div>
     <ConfirmDialog
