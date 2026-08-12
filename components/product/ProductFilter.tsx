@@ -6,7 +6,7 @@ import { getCategories } from "@/services/category.service";
 import { Category } from "@/types/category";
 import PriceRangeBar from "./PriceRangeBar";
 
-const PRICE_RANGE = { min: 0, max: 100_000_000, step: 100_000 };
+const PRICE_RANGE = { min: 0, max: 50_000_000, step: 1_000_000 };
 
 function FilterContent() {
   const router = useRouter();

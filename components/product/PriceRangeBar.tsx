@@ -13,8 +13,8 @@ const formatPrice = (value: number) =>
 
 export default function PriceRangeBar({
   min = 0,
-  max = 100_000_000,
-  step = 100_000,
+  max = 50_000_000,
+  step = 1_000_000,
   value,
   onChange,
 }: Props) {
