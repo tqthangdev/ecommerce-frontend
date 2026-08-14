@@ -60,9 +60,14 @@ export default function ProductVariantModal({
         </div>
 
         {selectedVariant && (
-          <p className="mb-4 text-sm text-gray-600">
-            Stock: {selectedVariant.stockQuantity}
-          </p>
+          <div className="mb-4">
+            <p className="text-lg font-bold text-red-600">
+              {selectedVariant.price.toLocaleString("vi-VN")} đ
+            </p>
+            <p className="text-sm text-gray-600">
+              Stock: {selectedVariant.stockQuantity}
+            </p>
+          </div>
         )}
 
         <ProductVariantPicker
