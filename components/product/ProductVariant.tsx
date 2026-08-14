@@ -159,6 +159,21 @@ export default function ProductVariant({
         onSizeChange={handleSizeChange}
       />
 
+      <div className="flex items-center justify-between text-sm text-gray-600">
+        <p>
+          Price:{" "}
+          <span className="font-semibold text-red-600">
+            {selectedVariant?.price.toLocaleString("vi-VN")} đ
+          </span>
+        </p>
+        <p>
+          Stock:{" "}
+          <span className={stock > 0 ? "font-semibold text-green-600" : "font-semibold text-red-500"}>
+            {stock > 0 ? `${stock} in stock` : "Out of stock"}
+          </span>
+        </p>
+      </div>
+
       <div className="border-t pt-4 relative flex items-center">
         <h3 className="mr-2 font-semibold">Quantity:</h3>
         <button
@@ -194,6 +209,13 @@ export default function ProductVariant({
             className={stock <= 0 ? "cursor-not-allowed text-gray-300" : "text-gray-900"}
           />
         </button>
+      </div>
+
+      <div className="flex items-center justify-between border-t pt-4">
+        <span className="text-gray-600">Subtotal:</span>
+        <span className="font-bold text-red-600">
+          {((selectedVariant?.price ?? 0) * quantity).toLocaleString("vi-VN")} đ
+        </span>
       </div>
 
       <button

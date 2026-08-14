@@ -29,16 +29,6 @@ export default function ProductDetail({ product }: Props) {
 
   const mainImage = getMainImage(product, selectedVariant);
 
-  const stock = selectedVariant?.stockQuantity ?? 0;
-
-  const price = selectedVariant?.price ?? 0;
-
-  const stockLabel =
-    stock > 0 ? `${stock} in stock` : "Out of stock";
-
-  const stockColor =
-    stock > 0 ? "text-green-600" : "text-red-500";
-
   return (
     <>
       <BackButton className="mb-3" label="Back" path="/products" />
@@ -72,15 +62,9 @@ export default function ProductDetail({ product }: Props) {
             )}
 
             <span
-              className={`rounded px-3 py-1 text-sm ${stockColor}`}
+              className="rounded bg-blue-100 px-3 py-1 text-sm text-blue-800"
             >
-              {stockLabel}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="text-3xl font-bold text-red-600">
-              {price.toLocaleString("vi-VN")} đ
+              {product.brand.name}
             </span>
           </div>
 

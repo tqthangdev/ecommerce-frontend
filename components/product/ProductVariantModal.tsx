@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Product, ProductVariant } from "@/types/product";
 import ProductVariantPicker from "./ProductVariant";
@@ -18,7 +17,6 @@ export default function ProductVariantModal({
   onClose,
   onConfirm,
 }: Props) {
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
 
   if (!open) return null;
 
@@ -59,21 +57,9 @@ export default function ProductVariantModal({
           </button>
         </div>
 
-        {selectedVariant && (
-          <div className="mb-4">
-            <p className="text-lg font-bold text-red-600">
-              {selectedVariant.price.toLocaleString("vi-VN")} đ
-            </p>
-            <p className="text-sm text-gray-600">
-              Stock: {selectedVariant.stockQuantity}
-            </p>
-          </div>
-        )}
-
         <ProductVariantPicker
           product={product}
           autoSelectInStock
-          onVariantChange={setSelectedVariant}
           onAdded={(variant) => {
             onConfirm(variant);
             onClose();
