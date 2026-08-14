@@ -40,14 +40,20 @@ export default function ProductVariantModal({
         "
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-xl font-bold">
-            Select Options
-          </h2>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-bold">
+              {product.name}
+            </h2>
+            <p className="text-sm text-gray-500">
+              Select Options
+            </p>
+          </div>
 
           <button
             onClick={onClose}
             className="
+              shrink-0
               text-gray-500
               transition
               hover:text-black

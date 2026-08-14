@@ -151,6 +151,21 @@ export default function ProductVariant({
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between font-semibold">
+        <p>
+          Price:{" "}
+          <span className="text-red-600">
+            {selectedVariant?.price.toLocaleString("vi-VN")} đ
+          </span>
+        </p>
+        <p>
+          Stock:{" "}
+          <span className={stock > 0 ? "text-green-600" : "text-red-500"}>
+            {stock > 0 ? `${stock} in stock` : "Out of stock"}
+          </span>
+        </p>
+      </div>
+
       <VariantSelector
         variants={variants}
         selectedColor={selectedColor}
@@ -158,21 +173,6 @@ export default function ProductVariant({
         onColorChange={handleColorChange}
         onSizeChange={handleSizeChange}
       />
-
-      <div className="flex items-center justify-between text-sm text-gray-600">
-        <p>
-          Price:{" "}
-          <span className="font-semibold text-red-600">
-            {selectedVariant?.price.toLocaleString("vi-VN")} đ
-          </span>
-        </p>
-        <p>
-          Stock:{" "}
-          <span className={stock > 0 ? "font-semibold text-green-600" : "font-semibold text-red-500"}>
-            {stock > 0 ? `${stock} in stock` : "Out of stock"}
-          </span>
-        </p>
-      </div>
 
       <div className="border-t pt-4 relative flex items-center">
         <h3 className="mr-2 font-semibold">Quantity:</h3>
